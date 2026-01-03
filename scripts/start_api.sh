@@ -1,23 +1,23 @@
 #!/bin/bash
-# 启动MedCrux API服务
+# 启动MedCrux API服务（使用uv运行）
 
-echo "🚀 启动MedCrux API服务..."
+echo "🚀 启动MedCrux API服务（使用uv）..."
 echo ""
 
-# 检查Python版本
-PYTHON_VERSION=$(python3 --version 2>&1 | awk '{print $2}')
-echo "📌 Python版本: $PYTHON_VERSION"
-
-# 检查依赖是否安装
-if ! python3 -c "import fastapi" 2>/dev/null; then
-    echo "❌ 错误: 依赖未安装"
+# 检查uv是否安装
+if ! command -v uv &> /dev/null; then
+    echo "❌ 错误: uv未安装"
     echo ""
-    echo "请先安装依赖："
-    echo "  uv sync"
-    echo "  或"
-    echo "  pip install -e ."
+    echo "请先安装uv："
+    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
     echo ""
     exit 1
+fi
+
+# 检查依赖是否已同步
+if [ ! -f "uv.lock" ]; then
+    echo "⚠️  警告: uv.lock文件不存在，正在同步依赖..."
+    uv sync
 fi
 
 # 检查环境变量
@@ -27,15 +27,8 @@ if [ -z "$DEEPSEEK_API_KEY" ]; then
     echo ""
 fi
 
-# 检查模块导入
-if ! python3 -c "import sys; sys.path.insert(0, 'src'); import medcrux.api.main" 2>/dev/null; then
-    echo "❌ 错误: 模块导入失败"
-    echo "   请检查依赖是否已正确安装"
-    exit 1
-fi
-
-echo "✅ 依赖检查通过"
+echo "✅ 使用uv运行服务..."
 echo ""
 
-# 启动服务
-uvicorn medcrux.api.main:app --reload --host 127.0.0.1 --port 8000
+# 使用uv run启动服务（uv会自动管理Python版本和依赖）
+uv run uvicorn medcrux.api.main:app --reload --host 127.0.0.1 --port 8000
