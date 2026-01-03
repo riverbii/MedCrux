@@ -60,23 +60,37 @@ pip install -e .
 export DEEPSEEK_API_KEY="sk-your-api-key-here"
 ```
 
-### 4. 启动后端服务
+### 4. 启动服务
+
+**方式一：使用启动脚本（推荐）**
+
+启动脚本会自动使用 `uv run` 来运行服务，确保使用正确的Python版本（3.12）和依赖环境：
 
 ```bash
-uvicorn medcrux.api.main:app --reload
+# 终端1：启动API服务
+./scripts/start_api.sh
+
+# 终端2：启动UI界面
+./scripts/start_ui.sh
 ```
 
-后端服务将在 `http://127.0.0.1:8000` 启动。
-
-### 5. 启动前端界面
-
-在另一个终端中：
+**方式二：手动启动（使用uv）**
 
 ```bash
-streamlit run src/medcrux/ui/app.py
+# 终端1：启动API服务
+uv run uvicorn medcrux.api.main:app --reload --host 127.0.0.1 --port 8000
+
+# 终端2：启动UI界面
+uv run streamlit run src/medcrux/ui/app.py
 ```
 
-前端界面将在浏览器中自动打开（默认 `http://localhost:8501`）。
+**注意**：
+- 启动脚本使用 `uv run` 来运行服务，会自动：
+  - 使用 `.python-version` 指定的Python版本（3.12）
+  - 使用 `uv.lock` 锁定的依赖版本
+  - 在隔离的虚拟环境中运行，避免与系统Python冲突
+- 后端服务将在 `http://127.0.0.1:8000` 启动
+- 前端界面将在浏览器中自动打开（默认 `http://localhost:8501`）
 
 ## 📖 使用说明
 
