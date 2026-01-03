@@ -173,7 +173,6 @@ class EntityExtractor:
             "微钙化",
             "声影",
             "不规则形状",
-            "条状低回声",  # 条索状、条索样
         ]
 
         for sign in malignant_signs:
