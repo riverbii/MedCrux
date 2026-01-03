@@ -1,0 +1,17 @@
+{
+  "id": "axiom_4_5",
+  "type": "axiom",
+  "name": "BI-RADS分类的后续建议 - BI-RADS 4类建议",
+  "content": "建议活检。所有BI-RADS 4类病变（包括4A、4B、4C）均应进行组织学检查以明确诊断。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "4.5"
+  },
+  "embeddings": []
+}

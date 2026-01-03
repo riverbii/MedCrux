@@ -1,0 +1,17 @@
+{
+  "id": "axiom_7_1",
+  "type": "axiom",
+  "name": "恶性征象的识别 - 高度可疑恶性征象",
+  "content": "以下征象单独或组合出现时，高度提示恶性：\n- 毛刺状边界（spiculated margin）\n- 不平行方位（纵横比>1，垂直生长）\n- 微钙化\n- 声影（后方回声衰减）\n- 不规则形状 + 不清晰边界",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "7.1"
+  },
+  "embeddings": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "axiom_4_4",
+  "type": "axiom",
+  "name": "BI-RADS分类的后续建议 - BI-RADS 3类建议",
+  "content": "短期随访，通常为6个月。如果病变稳定，可继续随访或降级为BI-RADS 2；如果病变增大或出现新的可疑特征，应升级为BI-RADS 4并建议活检。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "4.4"
+  },
+  "embeddings": []
+}

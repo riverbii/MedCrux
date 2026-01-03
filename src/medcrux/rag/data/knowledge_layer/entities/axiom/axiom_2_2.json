@@ -1,0 +1,17 @@
+{
+  "id": "axiom_2_2",
+  "type": "axiom",
+  "name": "BI-RADS分类系统定义 - BI-RADS分类集合",
+  "content": "BI-RADS分类系统包含且仅包含以下7个分类：{0, 1, 2, 3, 4, 5, 6}",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "2.2"
+  },
+  "embeddings": []
+}

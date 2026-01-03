@@ -1,0 +1,692 @@
+{
+  "rel_implies_concept_malignant_毛刺状边界_to_birads_4": {
+    "type": "implies",
+    "source": "concept_malignant_毛刺状边界",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_毛刺状边界_to_birads_4.json"
+  },
+  "rel_implies_concept_malignant_毛刺状边界_to_birads_5": {
+    "type": "implies",
+    "source": "concept_malignant_毛刺状边界",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_毛刺状边界_to_birads_5.json"
+  },
+  "rel_implies_concept_malignant_不平行方位_to_birads_4": {
+    "type": "implies",
+    "source": "concept_malignant_不平行方位",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_不平行方位_to_birads_4.json"
+  },
+  "rel_implies_concept_malignant_不平行方位_to_birads_5": {
+    "type": "implies",
+    "source": "concept_malignant_不平行方位",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_不平行方位_to_birads_5.json"
+  },
+  "rel_implies_concept_malignant_微钙化_to_birads_4": {
+    "type": "implies",
+    "source": "concept_malignant_微钙化",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_微钙化_to_birads_4.json"
+  },
+  "rel_implies_concept_malignant_微钙化_to_birads_5": {
+    "type": "implies",
+    "source": "concept_malignant_微钙化",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_微钙化_to_birads_5.json"
+  },
+  "rel_implies_concept_malignant_声影_to_birads_4": {
+    "type": "implies",
+    "source": "concept_malignant_声影",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_声影_to_birads_4.json"
+  },
+  "rel_implies_concept_malignant_声影_to_birads_5": {
+    "type": "implies",
+    "source": "concept_malignant_声影",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_声影_to_birads_5.json"
+  },
+  "rel_implies_concept_malignant_不规则形状_to_birads_4": {
+    "type": "implies",
+    "source": "concept_malignant_不规则形状",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_不规则形状_to_birads_4.json"
+  },
+  "rel_implies_concept_malignant_不规则形状_to_birads_5": {
+    "type": "implies",
+    "source": "concept_malignant_不规则形状",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/implies/rel_implies_concept_malignant_不规则形状_to_birads_5.json"
+  },
+  "rel_exclusive_concept_birads_6_concept_birads_1": {
+    "type": "exclusive",
+    "source": "concept_birads_6",
+    "target": "concept_birads_1",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_6_concept_birads_1.json"
+  },
+  "rel_exclusive_concept_birads_6_concept_birads_5": {
+    "type": "exclusive",
+    "source": "concept_birads_6",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_6_concept_birads_5.json"
+  },
+  "rel_exclusive_concept_birads_6_concept_birads_3": {
+    "type": "exclusive",
+    "source": "concept_birads_6",
+    "target": "concept_birads_3",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_6_concept_birads_3.json"
+  },
+  "rel_exclusive_concept_birads_6_concept_birads_4": {
+    "type": "exclusive",
+    "source": "concept_birads_6",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_6_concept_birads_4.json"
+  },
+  "rel_exclusive_concept_birads_6_concept_birads_0": {
+    "type": "exclusive",
+    "source": "concept_birads_6",
+    "target": "concept_birads_0",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_6_concept_birads_0.json"
+  },
+  "rel_exclusive_concept_birads_6_concept_birads_2": {
+    "type": "exclusive",
+    "source": "concept_birads_6",
+    "target": "concept_birads_2",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_6_concept_birads_2.json"
+  },
+  "rel_exclusive_concept_birads_1_concept_birads_5": {
+    "type": "exclusive",
+    "source": "concept_birads_1",
+    "target": "concept_birads_5",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_1_concept_birads_5.json"
+  },
+  "rel_exclusive_concept_birads_1_concept_birads_3": {
+    "type": "exclusive",
+    "source": "concept_birads_1",
+    "target": "concept_birads_3",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_1_concept_birads_3.json"
+  },
+  "rel_exclusive_concept_birads_1_concept_birads_4": {
+    "type": "exclusive",
+    "source": "concept_birads_1",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_1_concept_birads_4.json"
+  },
+  "rel_exclusive_concept_birads_1_concept_birads_0": {
+    "type": "exclusive",
+    "source": "concept_birads_1",
+    "target": "concept_birads_0",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_1_concept_birads_0.json"
+  },
+  "rel_exclusive_concept_birads_1_concept_birads_2": {
+    "type": "exclusive",
+    "source": "concept_birads_1",
+    "target": "concept_birads_2",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_1_concept_birads_2.json"
+  },
+  "rel_exclusive_concept_birads_5_concept_birads_3": {
+    "type": "exclusive",
+    "source": "concept_birads_5",
+    "target": "concept_birads_3",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_5_concept_birads_3.json"
+  },
+  "rel_exclusive_concept_birads_5_concept_birads_4": {
+    "type": "exclusive",
+    "source": "concept_birads_5",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_5_concept_birads_4.json"
+  },
+  "rel_exclusive_concept_birads_5_concept_birads_0": {
+    "type": "exclusive",
+    "source": "concept_birads_5",
+    "target": "concept_birads_0",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_5_concept_birads_0.json"
+  },
+  "rel_exclusive_concept_birads_5_concept_birads_2": {
+    "type": "exclusive",
+    "source": "concept_birads_5",
+    "target": "concept_birads_2",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_5_concept_birads_2.json"
+  },
+  "rel_exclusive_concept_birads_3_concept_birads_4": {
+    "type": "exclusive",
+    "source": "concept_birads_3",
+    "target": "concept_birads_4",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_3_concept_birads_4.json"
+  },
+  "rel_exclusive_concept_birads_3_concept_birads_0": {
+    "type": "exclusive",
+    "source": "concept_birads_3",
+    "target": "concept_birads_0",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_3_concept_birads_0.json"
+  },
+  "rel_exclusive_concept_birads_3_concept_birads_2": {
+    "type": "exclusive",
+    "source": "concept_birads_3",
+    "target": "concept_birads_2",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_3_concept_birads_2.json"
+  },
+  "rel_exclusive_concept_birads_4_concept_birads_0": {
+    "type": "exclusive",
+    "source": "concept_birads_4",
+    "target": "concept_birads_0",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_4_concept_birads_0.json"
+  },
+  "rel_exclusive_concept_birads_4_concept_birads_2": {
+    "type": "exclusive",
+    "source": "concept_birads_4",
+    "target": "concept_birads_2",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_4_concept_birads_2.json"
+  },
+  "rel_exclusive_concept_birads_0_concept_birads_2": {
+    "type": "exclusive",
+    "source": "concept_birads_0",
+    "target": "concept_birads_2",
+    "file": "logic_layer/relations/exclusive/rel_exclusive_concept_birads_0_concept_birads_2.json"
+  },
+  "rel_contains_axiom_1_1_term_R": {
+    "type": "contains",
+    "source": "axiom_1_1",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_1_term_R.json"
+  },
+  "rel_contains_axiom_1_1_term_发": {
+    "type": "contains",
+    "source": "axiom_1_1",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_1_term_发.json"
+  },
+  "rel_contains_axiom_1_1_term_必": {
+    "type": "contains",
+    "source": "axiom_1_1",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_1_term_必.json"
+  },
+  "rel_contains_axiom_1_1_term_-": {
+    "type": "contains",
+    "source": "axiom_1_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_1_term_-.json"
+  },
+  "rel_contains_axiom_1_2_term_边": {
+    "type": "contains",
+    "source": "axiom_1_2",
+    "target": "term_边",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_2_term_边.json"
+  },
+  "rel_contains_axiom_1_2_term_R": {
+    "type": "contains",
+    "source": "axiom_1_2",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_2_term_R.json"
+  },
+  "rel_contains_axiom_1_2_term_发": {
+    "type": "contains",
+    "source": "axiom_1_2",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_2_term_发.json"
+  },
+  "rel_contains_axiom_1_2_term_必": {
+    "type": "contains",
+    "source": "axiom_1_2",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_2_term_必.json"
+  },
+  "rel_contains_axiom_1_2_term_-": {
+    "type": "contains",
+    "source": "axiom_1_2",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_2_term_-.json"
+  },
+  "rel_contains_axiom_1_3_term_必": {
+    "type": "contains",
+    "source": "axiom_1_3",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_3_term_必.json"
+  },
+  "rel_contains_axiom_1_3_term_-": {
+    "type": "contains",
+    "source": "axiom_1_3",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_3_term_-.json"
+  },
+  "rel_contains_axiom_1_4_term_R": {
+    "type": "contains",
+    "source": "axiom_1_4",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_4_term_R.json"
+  },
+  "rel_contains_axiom_1_4_term_必": {
+    "type": "contains",
+    "source": "axiom_1_4",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_4_term_必.json"
+  },
+  "rel_contains_axiom_1_4_term_-": {
+    "type": "contains",
+    "source": "axiom_1_4",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_1_4_term_-.json"
+  },
+  "rel_contains_axiom_2_1_term_R": {
+    "type": "contains",
+    "source": "axiom_2_1",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_1_term_R.json"
+  },
+  "rel_contains_axiom_2_1_term_-": {
+    "type": "contains",
+    "source": "axiom_2_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_1_term_-.json"
+  },
+  "rel_contains_axiom_2_2_term_R": {
+    "type": "contains",
+    "source": "axiom_2_2",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_2_term_R.json"
+  },
+  "rel_contains_axiom_2_2_term_-": {
+    "type": "contains",
+    "source": "axiom_2_2",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_2_term_-.json"
+  },
+  "rel_contains_axiom_2_3_term_R": {
+    "type": "contains",
+    "source": "axiom_2_3",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_3_term_R.json"
+  },
+  "rel_contains_axiom_2_3_term_每": {
+    "type": "contains",
+    "source": "axiom_2_3",
+    "target": "term_每",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_3_term_每.json"
+  },
+  "rel_contains_axiom_2_3_term_-": {
+    "type": "contains",
+    "source": "axiom_2_3",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_3_term_-.json"
+  },
+  "rel_contains_axiom_2_4_term_R": {
+    "type": "contains",
+    "source": "axiom_2_4",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_4_term_R.json"
+  },
+  "rel_contains_axiom_2_4_term_-": {
+    "type": "contains",
+    "source": "axiom_2_4",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_2_4_term_-.json"
+  },
+  "rel_contains_axiom_3_1_term_R": {
+    "type": "contains",
+    "source": "axiom_3_1",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_1_term_R.json"
+  },
+  "rel_contains_axiom_3_1_term_-": {
+    "type": "contains",
+    "source": "axiom_3_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_1_term_-.json"
+  },
+  "rel_contains_axiom_3_2_term_R": {
+    "type": "contains",
+    "source": "axiom_3_2",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_2_term_R.json"
+  },
+  "rel_contains_axiom_3_2_term_发": {
+    "type": "contains",
+    "source": "axiom_3_2",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_2_term_发.json"
+  },
+  "rel_contains_axiom_3_2_term_-": {
+    "type": "contains",
+    "source": "axiom_3_2",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_2_term_-.json"
+  },
+  "rel_contains_axiom_3_3_term_R": {
+    "type": "contains",
+    "source": "axiom_3_3",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_3_term_R.json"
+  },
+  "rel_contains_axiom_3_3_term_发": {
+    "type": "contains",
+    "source": "axiom_3_3",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_3_term_发.json"
+  },
+  "rel_contains_axiom_3_3_term_-": {
+    "type": "contains",
+    "source": "axiom_3_3",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_3_term_-.json"
+  },
+  "rel_contains_axiom_3_4_term_R": {
+    "type": "contains",
+    "source": "axiom_3_4",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_4_term_R.json"
+  },
+  "rel_contains_axiom_3_4_term_-": {
+    "type": "contains",
+    "source": "axiom_3_4",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_4_term_-.json"
+  },
+  "rel_contains_axiom_3_5_term_R": {
+    "type": "contains",
+    "source": "axiom_3_5",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_5_term_R.json"
+  },
+  "rel_contains_axiom_3_5_term_-": {
+    "type": "contains",
+    "source": "axiom_3_5",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_5_term_-.json"
+  },
+  "rel_contains_axiom_3_6_term_R": {
+    "type": "contains",
+    "source": "axiom_3_6",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_6_term_R.json"
+  },
+  "rel_contains_axiom_3_6_term_-": {
+    "type": "contains",
+    "source": "axiom_3_6",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_6_term_-.json"
+  },
+  "rel_contains_axiom_3_7_term_R": {
+    "type": "contains",
+    "source": "axiom_3_7",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_7_term_R.json"
+  },
+  "rel_contains_axiom_3_7_term_-": {
+    "type": "contains",
+    "source": "axiom_3_7",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_3_7_term_-.json"
+  },
+  "rel_contains_axiom_4_1_term_必": {
+    "type": "contains",
+    "source": "axiom_4_1",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_1_term_必.json"
+  },
+  "rel_contains_axiom_4_4_term_R": {
+    "type": "contains",
+    "source": "axiom_4_4",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_4_term_R.json"
+  },
+  "rel_contains_axiom_4_4_term_-": {
+    "type": "contains",
+    "source": "axiom_4_4",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_4_term_-.json"
+  },
+  "rel_contains_axiom_4_5_term_R": {
+    "type": "contains",
+    "source": "axiom_4_5",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_5_term_R.json"
+  },
+  "rel_contains_axiom_4_5_term_-": {
+    "type": "contains",
+    "source": "axiom_4_5",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_5_term_-.json"
+  },
+  "rel_contains_axiom_4_6_term_R": {
+    "type": "contains",
+    "source": "axiom_4_6",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_6_term_R.json"
+  },
+  "rel_contains_axiom_4_6_term_-": {
+    "type": "contains",
+    "source": "axiom_4_6",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_6_term_-.json"
+  },
+  "rel_contains_axiom_4_7_term_-": {
+    "type": "contains",
+    "source": "axiom_4_7",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_4_7_term_-.json"
+  },
+  "rel_contains_axiom_5_1_term_必": {
+    "type": "contains",
+    "source": "axiom_5_1",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_1_term_必.json"
+  },
+  "rel_contains_axiom_5_1_term_-": {
+    "type": "contains",
+    "source": "axiom_5_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_1_term_-.json"
+  },
+  "rel_contains_axiom_5_2_term_必": {
+    "type": "contains",
+    "source": "axiom_5_2",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_2_term_必.json"
+  },
+  "rel_contains_axiom_5_3_term_R": {
+    "type": "contains",
+    "source": "axiom_5_3",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_3_term_R.json"
+  },
+  "rel_contains_axiom_5_3_term_必": {
+    "type": "contains",
+    "source": "axiom_5_3",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_3_term_必.json"
+  },
+  "rel_contains_axiom_5_4_term_边": {
+    "type": "contains",
+    "source": "axiom_5_4",
+    "target": "term_边",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_4_term_边.json"
+  },
+  "rel_contains_axiom_5_4_term_R": {
+    "type": "contains",
+    "source": "axiom_5_4",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_4_term_R.json"
+  },
+  "rel_contains_axiom_5_4_term_必": {
+    "type": "contains",
+    "source": "axiom_5_4",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_4_term_必.json"
+  },
+  "rel_contains_axiom_5_4_term_-": {
+    "type": "contains",
+    "source": "axiom_5_4",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_4_term_-.json"
+  },
+  "rel_contains_axiom_5_5_term_R": {
+    "type": "contains",
+    "source": "axiom_5_5",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_5_term_R.json"
+  },
+  "rel_contains_axiom_5_5_term_必": {
+    "type": "contains",
+    "source": "axiom_5_5",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_5_term_必.json"
+  },
+  "rel_contains_axiom_5_6_term_R": {
+    "type": "contains",
+    "source": "axiom_5_6",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_6_term_R.json"
+  },
+  "rel_contains_axiom_5_6_term_必": {
+    "type": "contains",
+    "source": "axiom_5_6",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_6_term_必.json"
+  },
+  "rel_contains_axiom_5_7_term_R": {
+    "type": "contains",
+    "source": "axiom_5_7",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_7_term_R.json"
+  },
+  "rel_contains_axiom_5_7_term_必": {
+    "type": "contains",
+    "source": "axiom_5_7",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_7_term_必.json"
+  },
+  "rel_contains_axiom_5_7_term_-": {
+    "type": "contains",
+    "source": "axiom_5_7",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_5_7_term_-.json"
+  },
+  "rel_contains_axiom_6_1_term_R": {
+    "type": "contains",
+    "source": "axiom_6_1",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_1_term_R.json"
+  },
+  "rel_contains_axiom_6_1_term_必": {
+    "type": "contains",
+    "source": "axiom_6_1",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_1_term_必.json"
+  },
+  "rel_contains_axiom_6_1_term_-": {
+    "type": "contains",
+    "source": "axiom_6_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_1_term_-.json"
+  },
+  "rel_contains_axiom_6_4_term_发": {
+    "type": "contains",
+    "source": "axiom_6_4",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_4_term_发.json"
+  },
+  "rel_contains_axiom_6_4_term_必": {
+    "type": "contains",
+    "source": "axiom_6_4",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_4_term_必.json"
+  },
+  "rel_contains_axiom_6_5_term_每": {
+    "type": "contains",
+    "source": "axiom_6_5",
+    "target": "term_每",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_5_term_每.json"
+  },
+  "rel_contains_axiom_6_5_term_发": {
+    "type": "contains",
+    "source": "axiom_6_5",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_5_term_发.json"
+  },
+  "rel_contains_axiom_6_5_term_必": {
+    "type": "contains",
+    "source": "axiom_6_5",
+    "target": "term_必",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_5_term_必.json"
+  },
+  "rel_contains_axiom_6_5_term_-": {
+    "type": "contains",
+    "source": "axiom_6_5",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_6_5_term_-.json"
+  },
+  "rel_contains_axiom_7_1_term_边": {
+    "type": "contains",
+    "source": "axiom_7_1",
+    "target": "term_边",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_1_term_边.json"
+  },
+  "rel_contains_axiom_7_1_term_R": {
+    "type": "contains",
+    "source": "axiom_7_1",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_1_term_R.json"
+  },
+  "rel_contains_axiom_7_1_term_-": {
+    "type": "contains",
+    "source": "axiom_7_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_1_term_-.json"
+  },
+  "rel_contains_axiom_7_2_term_边": {
+    "type": "contains",
+    "source": "axiom_7_2",
+    "target": "term_边",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_2_term_边.json"
+  },
+  "rel_contains_axiom_7_2_term_R": {
+    "type": "contains",
+    "source": "axiom_7_2",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_2_term_R.json"
+  },
+  "rel_contains_axiom_7_2_term_-": {
+    "type": "contains",
+    "source": "axiom_7_2",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_2_term_-.json"
+  },
+  "rel_contains_axiom_7_3_term_R": {
+    "type": "contains",
+    "source": "axiom_7_3",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_3_term_R.json"
+  },
+  "rel_contains_axiom_7_3_term_-": {
+    "type": "contains",
+    "source": "axiom_7_3",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_7_3_term_-.json"
+  },
+  "rel_contains_axiom_8_1_term_R": {
+    "type": "contains",
+    "source": "axiom_8_1",
+    "target": "term_R",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_8_1_term_R.json"
+  },
+  "rel_contains_axiom_8_1_term_发": {
+    "type": "contains",
+    "source": "axiom_8_1",
+    "target": "term_发",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_8_1_term_发.json"
+  },
+  "rel_contains_axiom_8_1_term_-": {
+    "type": "contains",
+    "source": "axiom_8_1",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_8_1_term_-.json"
+  },
+  "rel_contains_axiom_8_2_term_-": {
+    "type": "contains",
+    "source": "axiom_8_2",
+    "target": "term_-",
+    "file": "logic_layer/relations/contains/rel_contains_axiom_8_2_term_-.json"
+  }
+}

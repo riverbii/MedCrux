@@ -1,0 +1,17 @@
+{
+  "id": "axiom_4_1",
+  "type": "axiom",
+  "name": "BI-RADS分类的后续建议 - BI-RADS 0类建议",
+  "content": "必须追加影像评估或与之前的影像进行比较，完成评估后重新分类。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "4.1"
+  },
+  "embeddings": []
+}

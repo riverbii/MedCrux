@@ -1,0 +1,13 @@
+{
+  "id": "rel_contains_axiom_7_2_term_边",
+  "source_entity_id": "axiom_7_2",
+  "target_entity_id": "term_边",
+  "relation_type": "contains",
+  "strength": 1.0,
+  "conditions": null,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "confidence": 0.8
+  }
+}

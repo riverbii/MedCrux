@@ -1,0 +1,15 @@
+{
+  "id": "rel_implies_concept_malignant_声影_to_birads_5",
+  "source_entity_id": "concept_malignant_声影",
+  "target_entity_id": "concept_birads_5",
+  "relation_type": "implies",
+  "strength": 0.9,
+  "conditions": {
+    "multiple_signs": true
+  },
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "confidence": 0.9
+  }
+}

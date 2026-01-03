@@ -1,0 +1,17 @@
+{
+  "id": "concept_birads_6",
+  "type": "concept",
+  "name": "BI-RADS 6类",
+  "content": "公理3.7 BI-RADS 6类定级依据**  \n当且仅当病变已通过活检证实为恶性，用于治疗前评估时，分类为BI-RADS 6。恶性可能性为100%。\n\n---\n\n",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "birads_class": "6"
+  },
+  "embeddings": []
+}

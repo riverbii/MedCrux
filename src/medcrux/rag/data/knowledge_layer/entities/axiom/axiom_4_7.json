@@ -1,0 +1,17 @@
+{
+  "id": "axiom_4_7",
+  "type": "axiom",
+  "name": "BI-RADS分类的后续建议 - BI-RADS 6类建议",
+  "content": "已确诊恶性，用于治疗前评估。应进行完整的影像学评估以指导治疗方案制定。\n\n---",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "4.7"
+  },
+  "embeddings": []
+}

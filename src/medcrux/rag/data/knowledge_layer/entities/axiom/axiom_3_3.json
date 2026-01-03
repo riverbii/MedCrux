@@ -1,0 +1,17 @@
+{
+  "id": "axiom_3_3",
+  "type": "axiom",
+  "name": "BI-RADS分类定级依据 - BI-RADS 2类定级依据",
+  "content": "当且仅当发现明确的良性病变（如单纯囊肿、纤维腺瘤等），且无任何恶性征象时，分类为BI-RADS 2。恶性可能性为0%。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "3.3"
+  },
+  "embeddings": []
+}

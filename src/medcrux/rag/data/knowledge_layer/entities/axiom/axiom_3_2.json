@@ -1,0 +1,17 @@
+{
+  "id": "axiom_3_2",
+  "type": "axiom",
+  "name": "BI-RADS分类定级依据 - BI-RADS 1类定级依据",
+  "content": "当且仅当检查结果为阴性，无任何异常发现时，分类为BI-RADS 1。恶性可能性为0%。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "3.2"
+  },
+  "embeddings": []
+}

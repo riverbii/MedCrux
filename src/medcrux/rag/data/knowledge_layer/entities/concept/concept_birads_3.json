@@ -1,0 +1,17 @@
+{
+  "id": "concept_birads_3",
+  "type": "concept",
+  "name": "BI-RADS 3类",
+  "content": "公理3.4 BI-RADS 3类定级依据**  \n当且仅当病变具有以下特征时，分类为BI-RADS 3（可能良性）：\n- 恶性可能性 >0% 但 ≤2%\n- 具有良性倾向的形态学特征，但需要短期随访确认稳定性\n\n**BI-RADS 3类的典型特征**：\n- 形状：椭圆形\n- 边界：清晰或大部分清晰\n- 回声：均匀低回声\n- 方位：平行（纵横比<1）\n- 无恶性征象（无毛刺、无成角、无微钙化等）\n\n**",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "birads_class": "3"
+  },
+  "embeddings": []
+}

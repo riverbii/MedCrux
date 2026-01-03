@@ -1,0 +1,17 @@
+{
+  "id": "axiom_5_1",
+  "type": "axiom",
+  "name": "术语标准化 - 位置描述标准化",
+  "content": "位置描述必须使用以下标准格式之一：\n- 象限法：左/右乳 + 上内/上外/下内/下外象限\n- 钟点法：左/右乳 + 12点/3点/6点/9点方向 + 距乳头X cm",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "5.1"
+  },
+  "embeddings": []
+}

@@ -1,0 +1,292 @@
+{
+  "axiom_1_1": {
+    "type": "axiom",
+    "name": "完备的乳腺超声检查报告定义 - 结构完备性",
+    "file": "knowledge_layer/entities/axiom/axiom_1_1.json"
+  },
+  "axiom_1_2": {
+    "type": "axiom",
+    "name": "完备的乳腺超声检查报告定义 - 内容完备性",
+    "file": "knowledge_layer/entities/axiom/axiom_1_2.json"
+  },
+  "axiom_1_3": {
+    "type": "axiom",
+    "name": "完备的乳腺超声检查报告定义 - 检查范围完备性",
+    "file": "knowledge_layer/entities/axiom/axiom_1_3.json"
+  },
+  "axiom_1_4": {
+    "type": "axiom",
+    "name": "完备的乳腺超声检查报告定义 - BI-RADS分类强制性",
+    "file": "knowledge_layer/entities/axiom/axiom_1_4.json"
+  },
+  "axiom_2_1": {
+    "type": "axiom",
+    "name": "BI-RADS分类系统定义 - BI-RADS系统本质",
+    "file": "knowledge_layer/entities/axiom/axiom_2_1.json"
+  },
+  "axiom_2_2": {
+    "type": "axiom",
+    "name": "BI-RADS分类系统定义 - BI-RADS分类集合",
+    "file": "knowledge_layer/entities/axiom/axiom_2_2.json"
+  },
+  "axiom_2_3": {
+    "type": "axiom",
+    "name": "BI-RADS分类系统定义 - BI-RADS分类互斥性",
+    "file": "knowledge_layer/entities/axiom/axiom_2_3.json"
+  },
+  "axiom_2_4": {
+    "type": "axiom",
+    "name": "BI-RADS分类系统定义 - BI-RADS 4类细分",
+    "file": "knowledge_layer/entities/axiom/axiom_2_4.json"
+  },
+  "axiom_3_1": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 0类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_1.json"
+  },
+  "axiom_3_2": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 1类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_2.json"
+  },
+  "axiom_3_3": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 2类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_3.json"
+  },
+  "axiom_3_4": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 3类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_4.json"
+  },
+  "axiom_3_5": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 4类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_5.json"
+  },
+  "axiom_3_6": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 5类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_6.json"
+  },
+  "axiom_3_7": {
+    "type": "axiom",
+    "name": "BI-RADS分类定级依据 - BI-RADS 6类定级依据",
+    "file": "knowledge_layer/entities/axiom/axiom_3_7.json"
+  },
+  "axiom_4_1": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 0类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_1.json"
+  },
+  "axiom_4_2": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 1类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_2.json"
+  },
+  "axiom_4_3": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 2类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_3.json"
+  },
+  "axiom_4_4": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 3类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_4.json"
+  },
+  "axiom_4_5": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 4类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_5.json"
+  },
+  "axiom_4_6": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 5类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_6.json"
+  },
+  "axiom_4_7": {
+    "type": "axiom",
+    "name": "BI-RADS分类的后续建议 - BI-RADS 6类建议",
+    "file": "knowledge_layer/entities/axiom/axiom_4_7.json"
+  },
+  "axiom_5_1": {
+    "type": "axiom",
+    "name": "术语标准化 - 位置描述标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_1.json"
+  },
+  "axiom_5_2": {
+    "type": "axiom",
+    "name": "术语标准化 - 大小描述标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_2.json"
+  },
+  "axiom_5_3": {
+    "type": "axiom",
+    "name": "术语标准化 - 形状术语标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_3.json"
+  },
+  "axiom_5_4": {
+    "type": "axiom",
+    "name": "术语标准化 - 边界术语标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_4.json"
+  },
+  "axiom_5_5": {
+    "type": "axiom",
+    "name": "术语标准化 - 回声术语标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_5.json"
+  },
+  "axiom_5_6": {
+    "type": "axiom",
+    "name": "术语标准化 - 后方特征术语标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_6.json"
+  },
+  "axiom_5_7": {
+    "type": "axiom",
+    "name": "术语标准化 - 方位术语标准化",
+    "file": "knowledge_layer/entities/axiom/axiom_5_7.json"
+  },
+  "axiom_6_1": {
+    "type": "axiom",
+    "name": "质量控制标准 - BI-RADS分类率标准",
+    "file": "knowledge_layer/entities/axiom/axiom_6_1.json"
+  },
+  "axiom_6_2": {
+    "type": "axiom",
+    "name": "质量控制标准 - 诊断准确率标准",
+    "file": "knowledge_layer/entities/axiom/axiom_6_2.json"
+  },
+  "axiom_6_3": {
+    "type": "axiom",
+    "name": "质量控制标准 - 图像切面合格率标准",
+    "file": "knowledge_layer/entities/axiom/axiom_6_3.json"
+  },
+  "axiom_6_4": {
+    "type": "axiom",
+    "name": "质量控制标准 - 病变测量完整性",
+    "file": "knowledge_layer/entities/axiom/axiom_6_4.json"
+  },
+  "axiom_6_5": {
+    "type": "axiom",
+    "name": "质量控制标准 - 图像记录完整性",
+    "file": "knowledge_layer/entities/axiom/axiom_6_5.json"
+  },
+  "axiom_7_1": {
+    "type": "axiom",
+    "name": "恶性征象的识别 - 高度可疑恶性征象",
+    "file": "knowledge_layer/entities/axiom/axiom_7_1.json"
+  },
+  "axiom_7_2": {
+    "type": "axiom",
+    "name": "恶性征象的识别 - 良性倾向征象",
+    "file": "knowledge_layer/entities/axiom/axiom_7_2.json"
+  },
+  "axiom_7_3": {
+    "type": "axiom",
+    "name": "恶性征象的识别 - 征象组合的恶性可能性递增",
+    "file": "knowledge_layer/entities/axiom/axiom_7_3.json"
+  },
+  "axiom_8_1": {
+    "type": "axiom",
+    "name": "报告完整性验证 - 完备性验证规则",
+    "file": "knowledge_layer/entities/axiom/axiom_8_1.json"
+  },
+  "axiom_8_2": {
+    "type": "axiom",
+    "name": "报告完整性验证 - 不完备报告的识别",
+    "file": "knowledge_layer/entities/axiom/axiom_8_2.json"
+  },
+  "concept_birads_6": {
+    "type": "concept",
+    "name": "BI-RADS 6类",
+    "file": "knowledge_layer/entities/concept/concept_birads_6.json"
+  },
+  "concept_birads_1": {
+    "type": "concept",
+    "name": "BI-RADS 1类",
+    "file": "knowledge_layer/entities/concept/concept_birads_1.json"
+  },
+  "concept_birads_5": {
+    "type": "concept",
+    "name": "BI-RADS 5类",
+    "file": "knowledge_layer/entities/concept/concept_birads_5.json"
+  },
+  "concept_birads_3": {
+    "type": "concept",
+    "name": "BI-RADS 3类",
+    "file": "knowledge_layer/entities/concept/concept_birads_3.json"
+  },
+  "concept_birads_4": {
+    "type": "concept",
+    "name": "BI-RADS 4类",
+    "file": "knowledge_layer/entities/concept/concept_birads_4.json"
+  },
+  "concept_birads_0": {
+    "type": "concept",
+    "name": "BI-RADS 0类",
+    "file": "knowledge_layer/entities/concept/concept_birads_0.json"
+  },
+  "concept_birads_2": {
+    "type": "concept",
+    "name": "BI-RADS 2类",
+    "file": "knowledge_layer/entities/concept/concept_birads_2.json"
+  },
+  "concept_malignant_毛刺状边界": {
+    "type": "concept",
+    "name": "毛刺状边界",
+    "file": "knowledge_layer/entities/concept/concept_malignant_毛刺状边界.json"
+  },
+  "concept_malignant_不平行方位": {
+    "type": "concept",
+    "name": "不平行方位",
+    "file": "knowledge_layer/entities/concept/concept_malignant_不平行方位.json"
+  },
+  "concept_malignant_微钙化": {
+    "type": "concept",
+    "name": "微钙化",
+    "file": "knowledge_layer/entities/concept/concept_malignant_微钙化.json"
+  },
+  "concept_malignant_声影": {
+    "type": "concept",
+    "name": "声影",
+    "file": "knowledge_layer/entities/concept/concept_malignant_声影.json"
+  },
+  "concept_malignant_不规则形状": {
+    "type": "concept",
+    "name": "不规则形状",
+    "file": "knowledge_layer/entities/concept/concept_malignant_不规则形状.json"
+  },
+  "term_边": {
+    "type": "term",
+    "name": "边",
+    "file": "knowledge_layer/entities/term/term_边.json"
+  },
+  "term_R": {
+    "type": "term",
+    "name": "R",
+    "file": "knowledge_layer/entities/term/term_R.json"
+  },
+  "term_每": {
+    "type": "term",
+    "name": "每",
+    "file": "knowledge_layer/entities/term/term_每.json"
+  },
+  "term_发": {
+    "type": "term",
+    "name": "发",
+    "file": "knowledge_layer/entities/term/term_发.json"
+  },
+  "term_必": {
+    "type": "term",
+    "name": "必",
+    "file": "knowledge_layer/entities/term/term_必.json"
+  },
+  "term_-": {
+    "type": "term",
+    "name": "-",
+    "file": "knowledge_layer/entities/term/term_-.json"
+  },
+  "rule_完备性验证规则": {
+    "type": "rule",
+    "name": "完备性验证规则",
+    "file": "knowledge_layer/entities/rule/rule_完备性验证规则.json"
+  }
+}

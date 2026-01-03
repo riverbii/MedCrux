@@ -1,0 +1,17 @@
+{
+  "id": "axiom_3_1",
+  "type": "axiom",
+  "name": "BI-RADS分类定级依据 - BI-RADS 0类定级依据",
+  "content": "当且仅当检查不完整，需要追加影像评估或与之前的影像进行比较时，分类为BI-RADS 0。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "3.1"
+  },
+  "embeddings": []
+}

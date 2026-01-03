@@ -1,0 +1,13 @@
+{
+  "id": "rel_contains_axiom_5_6_term_R",
+  "source_entity_id": "axiom_5_6",
+  "target_entity_id": "term_R",
+  "relation_type": "contains",
+  "strength": 1.0,
+  "conditions": null,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "confidence": 0.8
+  }
+}

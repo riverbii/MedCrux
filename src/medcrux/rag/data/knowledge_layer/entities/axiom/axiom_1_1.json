@@ -1,0 +1,17 @@
+{
+  "id": "axiom_1_1",
+  "type": "axiom",
+  "name": "完备的乳腺超声检查报告定义 - 结构完备性",
+  "content": "一个完备的乳腺超声检查报告必须包含以下六个部分，缺一不可：\n\n1. **报告头部**：医疗机构名称、检查日期时间、患者基本信息（姓名、性别、年龄、ID号）、检查部位、检查方法\n2. **检查技术**：设备型号、探头类型和频率、检查方法（二维、彩色多普勒、弹性成像等）\n3. **检查所见**：乳腺结构描述、病变详细描述（如发现）、血流情况、其他发现\n4. **影像学诊断**：BI-RADS分类、诊断意见\n5. **建议**：根据BI-RADS分类提出的临床建议\n6. **报告尾部**：报告医师签名、审核医师签名、报告日期",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "1.1"
+  },
+  "embeddings": []
+}

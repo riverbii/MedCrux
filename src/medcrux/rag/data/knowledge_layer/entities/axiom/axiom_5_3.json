@@ -1,0 +1,17 @@
+{
+  "id": "axiom_5_3",
+  "type": "axiom",
+  "name": "术语标准化 - 形状术语标准化",
+  "content": "形状描述必须且仅能使用以下术语之一：椭圆形（oval）、圆形（round）、不规则形（irregular）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "5.3"
+  },
+  "embeddings": []
+}

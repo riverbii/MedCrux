@@ -1,0 +1,17 @@
+{
+  "id": "axiom_5_4",
+  "type": "axiom",
+  "name": "术语标准化 - 边界术语标准化",
+  "content": "边界描述必须且仅能使用以下术语：\n- 边界清晰（circumscribed）\n- 边界不清晰（not circumscribed），进一步细分为：模糊（indistinct）、成角（angular）、微小分叶（microlobulated）、毛刺状（spiculated）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "5.4"
+  },
+  "embeddings": []
+}

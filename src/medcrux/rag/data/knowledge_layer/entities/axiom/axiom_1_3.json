@@ -1,0 +1,17 @@
+{
+  "id": "axiom_1_3",
+  "type": "axiom",
+  "name": "完备的乳腺超声检查报告定义 - 检查范围完备性",
+  "content": "完备的检查必须覆盖：\n- 乳腺的所有象限（上内、上外、下内、下外）\n- 乳头后区\n- 腋窝区域（必要时）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "1.3"
+  },
+  "embeddings": []
+}

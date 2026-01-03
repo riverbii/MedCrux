@@ -1,0 +1,16 @@
+{
+  "id": "rule_完备性验证规则",
+  "type": "rule",
+  "name": "完备性验证规则",
+  "content": "公理8.2 不完备报告的识别**  \n报告不完备，当且仅当违反",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ]
+  },
+  "embeddings": []
+}

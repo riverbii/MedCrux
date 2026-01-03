@@ -1,0 +1,17 @@
+{
+  "id": "axiom_5_5",
+  "type": "axiom",
+  "name": "术语标准化 - 回声术语标准化",
+  "content": "回声描述必须且仅能使用以下术语之一：无回声（anechoic）、低回声（hypoechoic）、等回声（isoechoic）、高回声（hyperechoic）、复合回声（complex）、不均匀回声（heterogeneous）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "5.5"
+  },
+  "embeddings": []
+}

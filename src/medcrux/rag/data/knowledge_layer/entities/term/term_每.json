@@ -1,0 +1,17 @@
+{
+  "id": "term_每",
+  "type": "term",
+  "name": "每",
+  "content": "每（个）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "category": "方位术语标准化"
+  },
+  "embeddings": []
+}

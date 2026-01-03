@@ -1,0 +1,17 @@
+{
+  "id": "axiom_4_2",
+  "type": "axiom",
+  "name": "BI-RADS分类的后续建议 - BI-RADS 1类建议",
+  "content": "常规筛查，按年龄和风险因素进行定期随访。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "4.2"
+  },
+  "embeddings": []
+}

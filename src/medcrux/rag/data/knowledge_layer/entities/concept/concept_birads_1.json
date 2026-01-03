@@ -1,0 +1,17 @@
+{
+  "id": "concept_birads_1",
+  "type": "concept",
+  "name": "BI-RADS 1类",
+  "content": "公理3.2 BI-RADS 1类定级依据**  \n当且仅当检查结果为阴性，无任何异常发现时，分类为BI-RADS 1。恶性可能性为0%。\n\n**",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "birads_class": "1"
+  },
+  "embeddings": []
+}

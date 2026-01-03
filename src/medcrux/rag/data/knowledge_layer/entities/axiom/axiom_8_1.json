@@ -1,0 +1,17 @@
+{
+  "id": "axiom_8_1",
+  "type": "axiom",
+  "name": "报告完整性验证 - 完备性验证规则",
+  "content": "一个报告是完备的，当且仅当：\n1. 包含公理1.1定义的所有六个部分\n2. 如发现病变，包含公理1.2定义的所有描述要素\n3. 包含明确的BI-RADS分类（公理1.4）\n4. 使用标准术语（公理5）\n5. 包含根据BI-RADS分类的建议（公理4）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "8.1"
+  },
+  "embeddings": []
+}

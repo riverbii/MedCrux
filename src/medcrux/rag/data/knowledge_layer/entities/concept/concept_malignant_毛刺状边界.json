@@ -1,0 +1,16 @@
+{
+  "id": "concept_malignant_毛刺状边界",
+  "type": "concept",
+  "name": "毛刺状边界",
+  "content": "毛刺状边界是高度可疑恶性征象",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ]
+  },
+  "embeddings": []
+}

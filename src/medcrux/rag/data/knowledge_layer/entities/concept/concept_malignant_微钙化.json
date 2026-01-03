@@ -1,0 +1,16 @@
+{
+  "id": "concept_malignant_微钙化",
+  "type": "concept",
+  "name": "微钙化",
+  "content": "微钙化是高度可疑恶性征象",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ]
+  },
+  "embeddings": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "axiom_6_3",
+  "type": "axiom",
+  "name": "质量控制标准 - 图像切面合格率标准",
+  "content": "根据中华医学会超声医学分会2025年标准，乳腺超声图像切面合格率应 ≥ 80%。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "6.3"
+  },
+  "embeddings": []
+}

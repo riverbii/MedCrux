@@ -1,0 +1,17 @@
+{
+  "id": "axiom_6_5",
+  "type": "axiom",
+  "name": "质量控制标准 - 图像记录完整性",
+  "content": "必须记录关键切面的图像，包括：\n- 每个象限和乳头后区的图像\n- 发现病变时，记录病变的多个切面图像\n- 必要时记录腋窝区域图像\n\n---",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "6.5"
+  },
+  "embeddings": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "axiom_7_3",
+  "type": "axiom",
+  "name": "恶性征象的识别 - 征象组合的恶性可能性递增",
+  "content": "恶性可能性随可疑征象数量的增加而递增：\n- 1-2项可疑征象：通常为BI-RADS 4A（2%-10%）\n- 多项可疑征象：通常为BI-RADS 4B（10%-50%）或4C（50%-95%）\n- 多项高度可疑征象：通常为BI-RADS 5（≥95%）\n\n---",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "7.3"
+  },
+  "embeddings": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "axiom_3_4",
+  "type": "axiom",
+  "name": "BI-RADS分类定级依据 - BI-RADS 3类定级依据",
+  "content": "当且仅当病变具有以下特征时，分类为BI-RADS 3（可能良性）：\n- 恶性可能性 >0% 但 ≤2%\n- 具有良性倾向的形态学特征，但需要短期随访确认稳定性",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "3.4"
+  },
+  "embeddings": []
+}

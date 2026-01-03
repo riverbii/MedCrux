@@ -1,0 +1,17 @@
+{
+  "id": "axiom_5_6",
+  "type": "axiom",
+  "name": "术语标准化 - 后方特征术语标准化",
+  "content": "后方特征描述必须且仅能使用以下术语之一：无后方特征、增强（enhancement）、声影（shadowing）、混合模式（combined pattern）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "5.6"
+  },
+  "embeddings": []
+}

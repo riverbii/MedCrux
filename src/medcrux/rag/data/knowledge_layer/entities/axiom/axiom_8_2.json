@@ -1,0 +1,17 @@
+{
+  "id": "axiom_8_2",
+  "type": "axiom",
+  "name": "报告完整性验证 - 不完备报告的识别",
+  "content": "报告不完备，当且仅当违反公理8.1中的任意一条。\n\n---",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "8.2"
+  },
+  "embeddings": []
+}

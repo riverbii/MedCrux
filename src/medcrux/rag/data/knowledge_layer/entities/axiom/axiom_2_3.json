@@ -1,0 +1,17 @@
+{
+  "id": "axiom_2_3",
+  "type": "axiom",
+  "name": "BI-RADS分类系统定义 - BI-RADS分类互斥性",
+  "content": "每个病变或检查结果有且仅有一个BI-RADS分类，分类之间互斥。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "2.3"
+  },
+  "embeddings": []
+}

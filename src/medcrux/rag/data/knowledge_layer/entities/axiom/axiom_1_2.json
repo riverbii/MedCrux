@@ -1,0 +1,17 @@
+{
+  "id": "axiom_1_2",
+  "type": "axiom",
+  "name": "完备的乳腺超声检查报告定义 - 内容完备性",
+  "content": "当发现病变时，完备的报告必须包含以下描述要素：\n\n- **位置**：使用象限（上内、上外、下内、下外）和钟点位置法（12点、3点、6点、9点方向），并标注距乳头距离（单位：cm）\n- **大小**：测量并记录三个径线（长径 × 横径 × 前后径，单位：cm）\n- **形状**：椭圆形（oval）、圆形（round）、不规则形（irregular）\n- **边界**：边界清晰（circumscribed）或边界不清晰（not circumscribed：模糊indistinct、成角angular、微小分叶microlobulated、毛刺状spiculated）\n- **回声特征**：无回声（anechoic）、低回声（hypoechoic）、等回声（isoechoic）、高回声（hyperechoic）、复合回声（complex）、不均匀回声（heterogeneous）\n- **后方特征**：无后方特征、增强（enhancement）、声影（shadowing）、混合模式（combined pattern）\n- **方位**：平行（parallel，纵横比<1）或不平行（not parallel，纵横比>1）\n- **钙化**：有/无，描述类型（粗大、细小、微钙化）和分布\n- **血流情况**：使用彩色多普勒评估，描述血流丰富程度（丰富、一般、稀少、无）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "1.2"
+  },
+  "embeddings": []
+}

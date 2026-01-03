@@ -1,0 +1,17 @@
+{
+  "id": "axiom_7_2",
+  "type": "axiom",
+  "name": "恶性征象的识别 - 良性倾向征象",
+  "content": "以下征象单独或组合出现时，倾向于良性：\n- 椭圆形或圆形\n- 边界清晰（circumscribed）\n- 平行方位（纵横比<1）\n- 后方回声增强\n- 无回声（单纯囊肿）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "7.2"
+  },
+  "embeddings": []
+}

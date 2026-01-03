@@ -1,0 +1,17 @@
+{
+  "id": "axiom_1_4",
+  "type": "axiom",
+  "name": "完备的乳腺超声检查报告定义 - BI-RADS分类强制性",
+  "content": "所有报告必须包含明确的BI-RADS分类（0-6类），这是报告完备性的必要条件。根据中华医学会超声医学分会2025年标准，BI-RADS分类率应 ≥ 85%。\n\n---",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "1.4"
+  },
+  "embeddings": []
+}

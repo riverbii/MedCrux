@@ -1,0 +1,17 @@
+{
+  "id": "axiom_3_5",
+  "type": "axiom",
+  "name": "BI-RADS分类定级依据 - BI-RADS 4类定级依据",
+  "content": "当且仅当病变具有可疑异常特征，恶性可能性 >2% 但 <95% 时，分类为BI-RADS 4。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "3.5"
+  },
+  "embeddings": []
+}

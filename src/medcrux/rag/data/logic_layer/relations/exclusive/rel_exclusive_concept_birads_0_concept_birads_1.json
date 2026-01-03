@@ -1,0 +1,13 @@
+{
+  "id": "rel_exclusive_concept_birads_0_concept_birads_1",
+  "source_entity_id": "concept_birads_0",
+  "target_entity_id": "concept_birads_1",
+  "relation_type": "exclusive",
+  "strength": 1.0,
+  "conditions": null,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "confidence": 1.0
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "axiom_2_1",
+  "type": "axiom",
+  "name": "BI-RADS分类系统定义 - BI-RADS系统本质",
+  "content": "BI-RADS（Breast Imaging Reporting and Data System）是由美国放射学会（ACR）制定的标准化乳腺影像术语、报告组织、评估结构和分类系统，适用于乳腺X线摄影、超声和MRI检查。",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "2.1"
+  },
+  "embeddings": []
+}

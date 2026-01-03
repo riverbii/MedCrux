@@ -1,0 +1,17 @@
+{
+  "id": "axiom_2_4",
+  "type": "axiom",
+  "name": "BI-RADS分类系统定义 - BI-RADS 4类细分",
+  "content": "BI-RADS 4类可进一步细分为：\n- **4A**：低度可疑（恶性可能性 2%-10%）\n- **4B**：中度可疑（恶性可能性 10%-50%）\n- **4C**：高度可疑（恶性可能性 50%-95%）\n\n---",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "2.4"
+  },
+  "embeddings": []
+}

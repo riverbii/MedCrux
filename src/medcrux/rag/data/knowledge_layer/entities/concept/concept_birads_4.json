@@ -1,0 +1,17 @@
+{
+  "id": "concept_birads_4",
+  "type": "concept",
+  "name": "BI-RADS 4类",
+  "content": "公理3.5 BI-RADS 4类定级依据**  \n当且仅当病变具有可疑异常特征，恶性可能性 >2% 但 <95% 时，分类为BI-RADS 4。\n\n**BI-RADS 4类的可疑特征**（至少具备以下一项或多项）：\n- 形状：不规则形\n- 边界：不清晰（模糊、成角、微小分叶、毛刺状）\n- 方位：不平行（纵横比>1，垂直生长）\n- 回声：不均匀回声\n- 后方特征：声影\n- 钙化：微钙化\n- 血流：丰富血流信号\n\n**BI-RADS 4类细分依据**：\n- **4A（低度可疑，2%-10%）**：具有1-2项可疑特征，但整体倾向良性\n- **4B（中度可疑，10%-50%）**：具有多项可疑特征，恶性可能性中等\n- **4C（高度可疑，50%-95%）**：具有多项高度可疑特征，恶性可能性高\n\n**",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "birads_class": "4"
+  },
+  "embeddings": []
+}

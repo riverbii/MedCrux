@@ -1,0 +1,17 @@
+{
+  "id": "axiom_5_2",
+  "type": "axiom",
+  "name": "术语标准化 - 大小描述标准化",
+  "content": "大小描述必须使用三径线格式：长径 × 横径 × 前后径（单位：cm）",
+  "source": "ACR BI-RADS v2025",
+  "priority": 1,
+  "metadata": {
+    "created_date": "2026-01-03",
+    "author": "MD",
+    "references": [
+      "/Users/bixinfang/project/MedCrux/rag/breast_ultrasound_report_axioms.md"
+    ],
+    "axiom_number": "5.2"
+  },
+  "embeddings": []
+}
