@@ -213,3 +213,6 @@ logs/
 # Documentation (not tracked)
 docs/dev/
 docs/gov/
+
+# Source data
+source_data/
