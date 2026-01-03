@@ -1,12 +1,31 @@
+"""
+LLM分析引擎模块：使用DeepSeek进行医学逻辑分析
+
+根据STANDARDS_v1.1.md要求：
+- 基础日志记录：记录关键操作和错误
+- 错误追踪：所有异常必须被捕获并记录
+"""
+
 import json
 import os
 
 from openai import OpenAI
 
+from medcrux.utils.logger import log_error_with_context, setup_logger
+
+# 初始化logger
+logger = setup_logger("medcrux.analysis")
+
 # 初始化客户端 (DeepSeek 兼容 OpenAI SDK)
 # 建议将 API KEY 放入环境变量，或者在此处临时硬编码测试
 # export DEEPSEEK_API_KEY="sk-..."
-client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
+api_key = os.getenv("DEEPSEEK_API_KEY")
+if not api_key:
+    logger.warning("DEEPSEEK_API_KEY未设置，AI分析功能将不可用")
+else:
+    logger.info("DeepSeek API客户端初始化完成")
+
+client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
 
 def analyze_text_with_deepseek(ocr_text: str) -> dict:
@@ -37,7 +56,13 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
     """
 
     # 2. 调用 API
+    context = {"ocr_text_length": len(ocr_text)}
+    logger.debug(f"开始调用DeepSeek API [文本长度: {len(ocr_text)}]")
+
     try:
+        if not api_key:
+            raise ValueError("DEEPSEEK_API_KEY未设置")
+
         response = client.chat.completions.create(
             model="deepseek-chat",  # 使用 DeepSeek V3
             messages=[
@@ -52,12 +77,24 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
             response_format={"type": "json_object"},  # 强制返回 JSON (DeepSeek 支持)
         )
 
+        logger.debug("DeepSeek API调用成功")
+
         # 3. 解析结果
         content = response.choices[0].message.content
-        return json.loads(content)
+        result = json.loads(content)
 
+        logger.info(f"AI分析完成 [风险评估: {result.get('ai_risk_assessment', 'Unknown')}]")
+        return result
+
+    except json.JSONDecodeError as e:
+        log_error_with_context(logger, e, context=context, operation="AI分析结果解析")
+        return {
+            "ai_risk_assessment": "Error",
+            "advice": "AI分析结果解析失败，请稍后重试。",
+            "details": str(e),
+        }
     except Exception as e:
-        print(f"DeepSeek 调用失败: {e}")
+        log_error_with_context(logger, e, context=context, operation="DeepSeek API调用")
         # 返回一个兜底的错误结构
         return {
             "ai_risk_assessment": "Error",
