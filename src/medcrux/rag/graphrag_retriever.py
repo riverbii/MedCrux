@@ -18,6 +18,16 @@ from medcrux.utils.logger import log_error_with_context, setup_logger
 
 logger = setup_logger("medcrux.rag.graphrag")
 
+# 恶性征象同义词词典
+MALIGNANT_SIGN_SYNONYMS = {
+    "条状低回声": ["条索状", "条索样", "条状", "条索", "条状低回声", "条索状低回声"],
+    "毛刺状边界": ["毛刺", "毛刺状", "毛刺样", "spiculated", "spiculated margin"],
+    "不平行方位": ["不平行", "纵横比>1", "垂直生长", "not parallel"],
+    "微钙化": ["微钙化", "微小钙化", "microcalcification"],
+    "声影": ["声影", "后方回声衰减", "shadowing"],
+    "不规则形状": ["不规则", "不规则形", "irregular"],
+}
+
 
 class GraphRAGRetriever:
     """GraphRAG检索器：基于知识图谱的检索和推理"""
@@ -112,7 +122,7 @@ class GraphRAGRetriever:
             }
 
     def _match_entities(self, query: str) -> list[dict]:
-        """根据查询文本匹配相关实体"""
+        """根据查询文本匹配相关实体（支持同义词匹配）"""
         matched_entities = []
         query_lower = query.lower()
 
@@ -124,6 +134,20 @@ class GraphRAGRetriever:
                 name_lower = entity["name"].lower()
                 if name_lower in query_lower or query_lower in name_lower:
                     score += 0.5
+
+            # 同义词匹配（针对恶性征象）
+            entity_name = entity.get("name", "")
+            if entity_name in MALIGNANT_SIGN_SYNONYMS:
+                synonyms = MALIGNANT_SIGN_SYNONYMS[entity_name]
+                for synonym in synonyms:
+                    if synonym.lower() in query_lower:
+                        score += 0.8  # 同义词匹配给予更高权重
+                        break
+
+            # 形态学描述匹配：识别"条状低回声"等复合描述
+            if "条状" in query_lower or "条索" in query_lower:
+                if "条状低回声" in entity_name or "条索" in entity_name:
+                    score += 0.9  # 形态学描述匹配给予最高权重
 
             # 匹配实体内容
             if entity.get("content"):
