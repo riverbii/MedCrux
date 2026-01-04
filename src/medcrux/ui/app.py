@@ -5,7 +5,7 @@ import streamlit as st
 # 这是我们刚才启动的 FastAPI 后端地址
 API_BASE_URL = "http://127.0.0.1:8000"
 
-st.set_page_config(page_title="MedCrux Analysis", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="MedCrux Analysis v1.0.0", page_icon="🩺", layout="wide")
 
 # --- 免责声明（页面顶部） ---
 with st.container():
@@ -17,17 +17,23 @@ with st.container():
 # --- 侧边栏 ---
 with st.sidebar:
     st.title("MedCrux 🛡️")
-    st.info("后端 API 状态监控")
 
-    # 尝试连接后端进行健康检查
+    # 获取版本号
     try:
         health_res = requests.get(f"{API_BASE_URL}/health", timeout=2)
         if health_res.status_code == 200:
-            st.success(f"🟢 系统在线 (v{health_res.json().get('version')})")
+            version = health_res.json().get("version", "1.0.0")
+            st.caption(f"版本 v{version}")
+            st.success("🟢 系统在线")
         else:
             st.error("🔴 服务异常")
+            st.caption("版本 v1.0.0")
     except requests.exceptions.ConnectionError:
         st.error("🔴 无法连接后端 (请检查 FastAPI 是否启动)")
+        st.caption("版本 v1.0.0")
+
+    st.divider()
+    st.info("后端 API 状态监控")
 
 # --- 主界面 ---
 st.title("上传医学影像报告")
