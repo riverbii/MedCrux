@@ -20,44 +20,64 @@ class LogicalConsistencyChecker:
     def __init__(self):
         """初始化检查器，定义标准术语集合和BI-RADS分类的充要条件"""
         # 标准术语集合（基于公理5）
-        self.standard_shapes = {"椭圆形", "圆形", "不规则形", "oval", "round", "irregular"}
+        # 注意：只使用中文术语，英文术语仅用于匹配，不用于输出
+        self.standard_shapes = {"椭圆形", "圆形", "不规则形"}
         self.standard_boundaries = {
             "清晰",
-            "circumscribed",
             "大部分清晰",
-            "mostly circumscribed",
             "模糊",
-            "indistinct",
             "成角",
-            "angular",
             "微小分叶",
-            "microlobulated",
             "毛刺状",
-            "spiculated",
         }
         self.standard_echoes = {
             "均匀低回声",
-            "homogeneous hypoechoic",
             "不均匀回声",
-            "heterogeneous",
             "无回声",
-            "anechoic",
             "等回声",
-            "isoechoic",
             "高回声",
-            "hyperechoic",
             "复合回声",
-            "complex",
         }
-        self.standard_orientations = {"平行", "parallel", "不平行", "not parallel"}
+        self.standard_orientations = {"平行", "不平行"}
+
+        # 同义词映射（用于匹配）
+        self.synonyms = {
+            "boundary": {
+                "清楚": "清晰",  # "清楚"是"清晰"的同义词
+                "circumscribed": "清晰",
+                "mostly circumscribed": "大部分清晰",
+                "indistinct": "模糊",
+                "angular": "成角",
+                "microlobulated": "微小分叶",
+                "spiculated": "毛刺状",
+            },
+            "shape": {
+                "oval": "椭圆形",
+                "round": "圆形",
+                "irregular": "不规则形",
+            },
+            "echo": {
+                "homogeneous hypoechoic": "均匀低回声",
+                "heterogeneous": "不均匀回声",
+                "anechoic": "无回声",
+                "isoechoic": "等回声",
+                "hyperechoic": "高回声",
+                "complex": "复合回声",
+            },
+            "orientation": {
+                "parallel": "平行",
+                "not parallel": "不平行",
+            },
+        }
 
         # BI-RADS分类的充要条件（基于公理3）
+        # 注意：只使用中文术语，英文术语仅用于匹配
         self.birads_conditions = {
             "3": {
-                "shape": {"椭圆形", "oval"},  # 要求椭圆形
-                "boundary": {"清晰", "circumscribed", "大部分清晰", "mostly circumscribed"},  # 要求清晰或大部分清晰
-                "echo": {"均匀低回声", "homogeneous hypoechoic"},  # 要求均匀低回声
-                "orientation": {"平行", "parallel"},  # 要求平行
+                "shape": {"椭圆形"},  # 要求椭圆形
+                "boundary": {"清晰", "大部分清晰"},  # 要求清晰或大部分清晰
+                "echo": {"均匀低回声"},  # 要求均匀低回声（注意："低回声" ≠ "均匀低回声"）
+                "orientation": {"平行"},  # 要求平行
                 "aspect_ratio": "<1",  # 要求纵横比<1
                 "malignant_signs": False,  # 要求无恶性征象
             },
@@ -78,7 +98,7 @@ class LogicalConsistencyChecker:
         Returns:
             {
                 "is_standard": bool,
-                "standard_term": str | None,
+                "standard_term": str | None,  # 标准中文术语
                 "non_standard": str | None
             }
         """
@@ -98,7 +118,14 @@ class LogicalConsistencyChecker:
         else:
             return {"is_standard": False, "standard_term": None, "non_standard": extracted_value}
 
-        # 检查是否在标准集合中
+        # 1. 检查同义词映射
+        synonyms = self.synonyms.get(terminology_type, {})
+        for synonym, standard_term in synonyms.items():
+            if synonym.lower() in extracted_lower or extracted_lower in synonym.lower():
+                if standard_term in standard_set:
+                    return {"is_standard": True, "standard_term": standard_term, "non_standard": None}
+
+        # 2. 检查是否在标准集合中（直接匹配）
         for standard_term in standard_set:
             if standard_term.lower() in extracted_lower or extracted_lower in standard_term.lower():
                 return {"is_standard": True, "standard_term": standard_term, "non_standard": None}
@@ -140,59 +167,84 @@ class LogicalConsistencyChecker:
         if "shape" in conditions:
             extracted_shape = extracted_findings.get("shape", "")
             if extracted_shape:
-                # 检查提取的形状是否满足要求
+                # 先进行术语标准化检查
+                term_check = self.check_terminology(extracted_shape, "shape")
+                standardized_shape = term_check["standard_term"] if term_check["is_standard"] else extracted_shape
+
+                # 检查标准化后的形状是否满足要求
                 shape_satisfies = False
                 for required_shape in conditions["shape"]:
-                    if required_shape.lower() in extracted_shape.lower():
+                    if required_shape in standardized_shape or standardized_shape in required_shape:
                         shape_satisfies = True
                         break
 
-                # 如果不在标准集合中，检查是否满足要求
                 if not shape_satisfies:
-                    term_check = self.check_terminology(extracted_shape, "shape")
-                    if not term_check["is_standard"] or term_check["standard_term"] not in conditions["shape"]:
-                        violations.append(f"形状不符合：要求{list(conditions['shape'])[0]}，实际为{extracted_shape}")
+                    required_shape_cn = list(conditions["shape"])[0]
+                    violations.append(f"形状不符合：要求{required_shape_cn}，实际为{extracted_shape}")
 
         # 检查边界（如果该分类有边界要求）
         if "boundary" in conditions:
             extracted_boundary = extracted_findings.get("boundary", "")
             if extracted_boundary:
+                # 先进行术语标准化检查（包括同义词处理，如"清楚" → "清晰"）
+                term_check = self.check_terminology(extracted_boundary, "boundary")
+                standardized_boundary = term_check["standard_term"] if term_check["is_standard"] else extracted_boundary
+
+                # 检查标准化后的边界是否满足要求
                 boundary_satisfies = False
                 for required_boundary in conditions["boundary"]:
-                    if required_boundary.lower() in extracted_boundary.lower():
+                    if required_boundary in standardized_boundary or standardized_boundary in required_boundary:
                         boundary_satisfies = True
                         break
 
                 if not boundary_satisfies:
-                    violations.append(f"边界不符合：要求{list(conditions['boundary'])[0]}，实际为{extracted_boundary}")
+                    required_boundary_cn = list(conditions["boundary"])[0]
+                    violations.append(f"边界不符合：要求{required_boundary_cn}，实际为{extracted_boundary}")
 
         # 检查回声（如果该分类有回声要求）
         if "echo" in conditions:
             extracted_echo = extracted_findings.get("echo", "")
             if extracted_echo:
+                # 先进行术语标准化检查
+                term_check = self.check_terminology(extracted_echo, "echo")
+                standardized_echo = term_check["standard_term"] if term_check["is_standard"] else extracted_echo
+
+                # 检查标准化后的回声是否满足要求
+                # 注意：根据MD判断，"低回声" ≠ "均匀低回声"，需要严格匹配
                 echo_satisfies = False
                 for required_echo in conditions["echo"]:
-                    if required_echo.lower() in extracted_echo.lower():
+                    # 严格匹配：必须完全匹配，不能部分匹配
+                    if required_echo == standardized_echo:
                         echo_satisfies = True
                         break
 
                 if not echo_satisfies:
-                    violations.append(f"回声不符合：要求{list(conditions['echo'])[0]}，实际为{extracted_echo}")
+                    required_echo_cn = list(conditions["echo"])[0]
+                    violations.append(f"回声不符合：要求{required_echo_cn}，实际为{extracted_echo}")
 
         # 检查方位（如果该分类有方位要求）
         if "orientation" in conditions:
             extracted_orientation = extracted_findings.get("orientation", "")
             if extracted_orientation:
+                # 先进行术语标准化检查
+                term_check = self.check_terminology(extracted_orientation, "orientation")
+                standardized_orientation = (
+                    term_check["standard_term"] if term_check["is_standard"] else extracted_orientation
+                )
+
+                # 检查标准化后的方位是否满足要求
                 orientation_satisfies = False
                 for required_orientation in conditions["orientation"]:
-                    if required_orientation.lower() in extracted_orientation.lower():
+                    if (
+                        required_orientation in standardized_orientation
+                        or standardized_orientation in required_orientation
+                    ):
                         orientation_satisfies = True
                         break
 
                 if not orientation_satisfies:
-                    violations.append(
-                        f"方位不符合：要求{list(conditions['orientation'])[0]}，实际为{extracted_orientation}"
-                    )
+                    required_orientation_cn = list(conditions["orientation"])[0]
+                    violations.append(f"方位不符合：要求{required_orientation_cn}，实际为{extracted_orientation}")
 
         # 检查纵横比（如果该分类有纵横比要求）
         if "aspect_ratio" in conditions:
