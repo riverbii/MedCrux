@@ -126,25 +126,32 @@ if uploaded_file is not None:
                     # 结构化展示提取的形态学特征（P0需求3）
                     st.markdown("#### 🔍 提取的形态学特征")
 
-                    # 数据清理函数：如果值包含"/"，只取第一个值（主要值）
-                    def clean_feature_value(value: str) -> str:
-                        """清理特征值，如果包含多个值（用/分隔），只取第一个"""
+                    # 数据格式化函数：如果值包含"/"，转换为逗号分隔的列表（医疗产品不能丢失信息）
+                    def format_feature_value(value: str) -> str:
+                        """
+                        格式化特征值，如果包含多个值（用/分隔），转换为逗号分隔的列表
+                        医疗产品不能丢失任何信息，特别是风险信号
+                        """
                         if not value or value == "未提取":
                             return "未提取"
-                        # 如果包含"/"，只取第一个值
+                        # 如果包含"/"，转换为逗号分隔的列表
                         if "/" in value:
-                            return value.split("/")[0].strip()
+                            values = [v.strip() for v in value.split("/") if v.strip()]
+                            # 如果值太多，显示前3个并说明"等"
+                            if len(values) > 3:
+                                return f"{', '.join(values[:3])}等（共{len(values)}个）"
+                            return ", ".join(values)
                         return value.strip()
 
                     col1, col2 = st.columns(2)
                     with col1:
-                        shape = clean_feature_value(ai_data.get("extracted_shape", "未提取"))
-                        boundary = clean_feature_value(ai_data.get("extracted_boundary", "未提取"))
+                        shape = format_feature_value(ai_data.get("extracted_shape", "未提取"))
+                        boundary = format_feature_value(ai_data.get("extracted_boundary", "未提取"))
                         st.markdown(f"- **形状**：{shape}")
                         st.markdown(f"- **边界**：{boundary}")
                     with col2:
-                        echo = clean_feature_value(ai_data.get("extracted_echo", "未提取"))
-                        orientation = clean_feature_value(ai_data.get("extracted_orientation", "未提取"))
+                        echo = format_feature_value(ai_data.get("extracted_echo", "未提取"))
+                        orientation = format_feature_value(ai_data.get("extracted_orientation", "未提取"))
                         st.markdown(f"- **回声**：{echo}")
                         st.markdown(f"- **方位**：{orientation}")
 

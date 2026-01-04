@@ -50,20 +50,31 @@ def _post_process_consistency_check(result: dict, ocr_text: str) -> dict:
         checker = LogicalConsistencyChecker()
 
         # 提取关键信息
-        # 数据清理：如果值包含"/"，只取第一个值（主要值）
-        def clean_value(value: str) -> str:
-            """清理值，如果包含多个值（用/分隔），只取第一个"""
+        # 数据清理：如果值包含"/"，需要检查所有值，不能只取第一个（医疗产品不能丢失风险信息）
+        def extract_primary_value(value: str) -> str:
+            """
+            提取主要值用于逻辑一致性检查
+            如果包含多个值（用/分隔），优先选择非标准术语（如"条状"），否则选择第一个
+            医疗产品不能丢失风险信号
+            """
             if not value:
                 return ""
             if "/" in value:
-                return value.split("/")[0].strip()
+                values = [v.strip() for v in value.split("/") if v.strip()]
+                # 优先选择非标准术语（如"条状"、"条索状"），因为这些是风险信号
+                non_standard_terms = ["条状", "条索状", "管状", "线状"]
+                for val in values:
+                    if any(term in val for term in non_standard_terms):
+                        return val
+                # 如果没有非标准术语，选择第一个
+                return values[0] if values else ""
             return value.strip()
 
         extracted_findings = {
-            "shape": clean_value(result.get("extracted_shape", "")),
-            "boundary": clean_value(result.get("extracted_boundary", "")),
-            "echo": clean_value(result.get("extracted_echo", "")),
-            "orientation": clean_value(result.get("extracted_orientation", "")),
+            "shape": extract_primary_value(result.get("extracted_shape", "")),
+            "boundary": extract_primary_value(result.get("extracted_boundary", "")),
+            "echo": extract_primary_value(result.get("extracted_echo", "")),
+            "orientation": extract_primary_value(result.get("extracted_orientation", "")),
             "aspect_ratio": result.get("extracted_aspect_ratio"),
             "malignant_signs": result.get("extracted_malignant_signs", []),
         }
