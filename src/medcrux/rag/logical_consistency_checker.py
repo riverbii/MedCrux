@@ -21,6 +21,7 @@ class LogicalConsistencyChecker:
         """初始化检查器，定义标准术语集合和BI-RADS分类的充要条件"""
         # 标准术语集合（基于公理5）
         # 注意：只使用中文术语，英文术语仅用于匹配，不用于输出
+        # 同义词、近义词等语言层面的问题由LLM在提取阶段处理，这里只检查医学逻辑
         self.standard_shapes = {"椭圆形", "圆形", "不规则形"}
         self.standard_boundaries = {
             "清晰",
@@ -39,36 +40,6 @@ class LogicalConsistencyChecker:
             "复合回声",
         }
         self.standard_orientations = {"平行", "不平行"}
-
-        # 同义词映射（用于匹配）
-        self.synonyms = {
-            "boundary": {
-                "清楚": "清晰",  # "清楚"是"清晰"的同义词
-                "circumscribed": "清晰",
-                "mostly circumscribed": "大部分清晰",
-                "indistinct": "模糊",
-                "angular": "成角",
-                "microlobulated": "微小分叶",
-                "spiculated": "毛刺状",
-            },
-            "shape": {
-                "oval": "椭圆形",
-                "round": "圆形",
-                "irregular": "不规则形",
-            },
-            "echo": {
-                "homogeneous hypoechoic": "均匀低回声",
-                "heterogeneous": "不均匀回声",
-                "anechoic": "无回声",
-                "isoechoic": "等回声",
-                "hyperechoic": "高回声",
-                "complex": "复合回声",
-            },
-            "orientation": {
-                "parallel": "平行",
-                "not parallel": "不平行",
-            },
-        }
 
         # BI-RADS分类的充要条件（基于公理3）
         # 注意：只使用中文术语，英文术语仅用于匹配
@@ -91,8 +62,11 @@ class LogicalConsistencyChecker:
         """
         检查提取的术语是否在标准术语集合中（基于公理5）
 
+        注意：同义词、近义词等语言层面的问题由LLM在提取阶段处理。
+        这里只检查医学逻辑，不处理语言问题。
+
         Args:
-            extracted_value: 提取的术语值
+            extracted_value: 提取的术语值（应该已经由LLM标准化）
             terminology_type: 术语类型（shape, boundary, echo, orientation）
 
         Returns:
@@ -118,14 +92,8 @@ class LogicalConsistencyChecker:
         else:
             return {"is_standard": False, "standard_term": None, "non_standard": extracted_value}
 
-        # 1. 检查同义词映射
-        synonyms = self.synonyms.get(terminology_type, {})
-        for synonym, standard_term in synonyms.items():
-            if synonym.lower() in extracted_lower or extracted_lower in synonym.lower():
-                if standard_term in standard_set:
-                    return {"is_standard": True, "standard_term": standard_term, "non_standard": None}
-
-        # 2. 检查是否在标准集合中（直接匹配）
+        # 检查是否在标准集合中（直接匹配）
+        # 注意：LLM应该在提取阶段已经处理了同义词、近义词等语言问题
         for standard_term in standard_set:
             if standard_term.lower() in extracted_lower or extracted_lower in standard_term.lower():
                 return {"is_standard": True, "standard_term": standard_term, "non_standard": None}
@@ -183,17 +151,14 @@ class LogicalConsistencyChecker:
                     violations.append(f"形状不符合：要求{required_shape_cn}，实际为{extracted_shape}")
 
         # 检查边界（如果该分类有边界要求）
+        # 注意：extracted_boundary应该已经由LLM标准化为标准术语（包括同义词处理）
         if "boundary" in conditions:
             extracted_boundary = extracted_findings.get("boundary", "")
             if extracted_boundary:
-                # 先进行术语标准化检查（包括同义词处理，如"清楚" → "清晰"）
-                term_check = self.check_terminology(extracted_boundary, "boundary")
-                standardized_boundary = term_check["standard_term"] if term_check["is_standard"] else extracted_boundary
-
-                # 检查标准化后的边界是否满足要求
+                # 检查提取的边界是否满足要求（直接匹配，LLM已处理同义词）
                 boundary_satisfies = False
                 for required_boundary in conditions["boundary"]:
-                    if required_boundary in standardized_boundary or standardized_boundary in required_boundary:
+                    if required_boundary in extracted_boundary or extracted_boundary in required_boundary:
                         boundary_satisfies = True
                         break
 
@@ -202,19 +167,16 @@ class LogicalConsistencyChecker:
                     violations.append(f"边界不符合：要求{required_boundary_cn}，实际为{extracted_boundary}")
 
         # 检查回声（如果该分类有回声要求）
+        # 注意：extracted_echo应该已经由LLM标准化为标准术语
+        # 医学判断：根据MD定义，"低回声" ≠ "均匀低回声"（这是医学专用术语的判断）
         if "echo" in conditions:
             extracted_echo = extracted_findings.get("echo", "")
             if extracted_echo:
-                # 先进行术语标准化检查
-                term_check = self.check_terminology(extracted_echo, "echo")
-                standardized_echo = term_check["standard_term"] if term_check["is_standard"] else extracted_echo
-
-                # 检查标准化后的回声是否满足要求
-                # 注意：根据MD判断，"低回声" ≠ "均匀低回声"，需要严格匹配
+                # 检查提取的回声是否满足要求
+                # 严格匹配：必须完全匹配，不能部分匹配（医学专用术语要求）
                 echo_satisfies = False
                 for required_echo in conditions["echo"]:
-                    # 严格匹配：必须完全匹配，不能部分匹配
-                    if required_echo == standardized_echo:
+                    if required_echo == extracted_echo:
                         echo_satisfies = True
                         break
 
@@ -223,22 +185,14 @@ class LogicalConsistencyChecker:
                     violations.append(f"回声不符合：要求{required_echo_cn}，实际为{extracted_echo}")
 
         # 检查方位（如果该分类有方位要求）
+        # 注意：extracted_orientation应该已经由LLM标准化为标准术语
         if "orientation" in conditions:
             extracted_orientation = extracted_findings.get("orientation", "")
             if extracted_orientation:
-                # 先进行术语标准化检查
-                term_check = self.check_terminology(extracted_orientation, "orientation")
-                standardized_orientation = (
-                    term_check["standard_term"] if term_check["is_standard"] else extracted_orientation
-                )
-
-                # 检查标准化后的方位是否满足要求
+                # 检查提取的方位是否满足要求（直接匹配，LLM已处理同义词）
                 orientation_satisfies = False
                 for required_orientation in conditions["orientation"]:
-                    if (
-                        required_orientation in standardized_orientation
-                        or standardized_orientation in required_orientation
-                    ):
+                    if required_orientation in extracted_orientation or extracted_orientation in required_orientation:
                         orientation_satisfies = True
                         break
 
