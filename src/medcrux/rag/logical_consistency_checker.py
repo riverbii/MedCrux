@@ -132,17 +132,14 @@ class LogicalConsistencyChecker:
         violations = []
 
         # 检查形状（如果该分类有形状要求）
+        # 注意：extracted_shape应该已经由LLM标准化为标准术语（包括同义词处理）
         if "shape" in conditions:
             extracted_shape = extracted_findings.get("shape", "")
             if extracted_shape:
-                # 先进行术语标准化检查
-                term_check = self.check_terminology(extracted_shape, "shape")
-                standardized_shape = term_check["standard_term"] if term_check["is_standard"] else extracted_shape
-
-                # 检查标准化后的形状是否满足要求
+                # 检查提取的形状是否满足要求（直接匹配，LLM已处理同义词）
                 shape_satisfies = False
                 for required_shape in conditions["shape"]:
-                    if required_shape in standardized_shape or standardized_shape in required_shape:
+                    if required_shape in extracted_shape or extracted_shape in required_shape:
                         shape_satisfies = True
                         break
 
