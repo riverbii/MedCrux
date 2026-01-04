@@ -12,6 +12,7 @@ LLM分析引擎模块：使用DeepSeek进行医学逻辑分析
 
 import json
 import os
+import time
 
 from openai import OpenAI
 
@@ -121,9 +122,12 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
 
     # 1. RAG检索：从知识图谱中检索相关知识
     rag_context = ""
+    rag_start_time = time.time()
+    rag_time = 0.0
     try:
         retriever = _get_retriever()
         retrieval_result = retriever.retrieve(ocr_text)
+        rag_time = time.time() - rag_start_time
 
         if retrieval_result["entities"]:
             rag_context = "\n\n## 相关医学知识（来自RAG知识库）：\n\n"
@@ -145,12 +149,15 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
             logger.info(
                 f"RAG检索完成：{len(retrieval_result['entities'])} 个实体，"
                 f"{len(retrieval_result['relations'])} 个关系，"
-                f"置信度：{retrieval_result['confidence']:.2f}"
+                f"置信度：{retrieval_result['confidence']:.2f}，"
+                f"耗时：{rag_time:.2f}秒"
             )
         else:
-            logger.warning("RAG检索未找到相关知识")
+            logger.warning(f"RAG检索未找到相关知识，耗时：{rag_time:.2f}秒")
     except Exception as e:
+        rag_time = time.time() - rag_start_time
         log_error_with_context(logger, e, context={"ocr_text_length": len(ocr_text)}, operation="RAG检索")
+        logger.warning(f"RAG检索失败，耗时：{rag_time:.2f}秒")
         # RAG检索失败不影响LLM分析，继续执行
 
     # 2. 定义 System Prompt (人设与规则)
@@ -240,6 +247,7 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
     context = {"ocr_text_length": len(ocr_text)}
     logger.debug(f"开始调用DeepSeek API [文本长度: {len(ocr_text)}]")
 
+    llm_start_time = time.time()
     try:
         if not api_key:
             raise ValueError("DEEPSEEK_API_KEY未设置")
@@ -258,18 +266,23 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
             response_format={"type": "json_object"},  # 强制返回 JSON (DeepSeek 支持)
         )
 
-        logger.debug("DeepSeek API调用成功")
+        llm_api_time = time.time() - llm_start_time
+        logger.debug(f"DeepSeek API调用成功，耗时：{llm_api_time:.2f}秒")
 
         # 3. 解析结果
         content = response.choices[0].message.content
         result = json.loads(content)
 
         # 4. 后处理：逻辑一致性检查（如果LLM没有正确执行）
+        post_process_start = time.time()
         result = _post_process_consistency_check(result, ocr_text)
+        post_process_time = time.time() - post_process_start
 
+        total_llm_time = time.time() - llm_start_time
         logger.info(
             f"AI分析完成 [风险评估: {result.get('ai_risk_assessment', 'Unknown')}, "
-            f"不一致预警: {result.get('inconsistency_alert', False)}]"
+            f"不一致预警: {result.get('inconsistency_alert', False)}, "
+            f"总耗时: {total_llm_time:.2f}秒 (API: {llm_api_time:.2f}秒, 后处理: {post_process_time:.2f}秒)]"
         )
         return result
 
