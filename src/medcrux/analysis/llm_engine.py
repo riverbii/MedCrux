@@ -38,18 +38,84 @@ client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 _retriever: GraphRAGRetriever | None = None
 
 
+def _convert_old_format_to_new(old_result: dict) -> dict:
+    """
+    将旧格式（单一结果）转换为新格式（结节列表）
+
+    旧格式：
+    {
+        "extracted_shape": "椭圆形",
+        "extracted_boundary": "清晰",
+        ...
+    }
+
+    新格式：
+    {
+        "nodules": [
+            {
+                "id": "nodule_1",
+                "location": {...},
+                "morphology": {...},
+                ...
+            }
+        ],
+        "overall_assessment": {...}
+    }
+    """
+    # 检查是否已经是新格式
+    if "nodules" in old_result:
+        return old_result
+
+    # 转换为新格式
+    nodule = {
+        "id": "nodule_1",
+        "location": {
+            "breast": old_result.get("patient_gender", "Unknown"),
+            "quadrant": old_result.get("extracted_quadrant", ""),
+            "clock_position": old_result.get("extracted_clock_position", ""),
+            "distance_from_nipple": old_result.get("extracted_distance_from_nipple", ""),
+        },
+        "morphology": {
+            "shape": old_result.get("extracted_shape", ""),
+            "boundary": old_result.get("extracted_boundary", ""),
+            "echo": old_result.get("extracted_echo", ""),
+            "orientation": old_result.get("extracted_orientation", ""),
+            "size": old_result.get("extracted_size", ""),
+        },
+        "malignant_signs": old_result.get("extracted_malignant_signs", []),
+        "birads_class": old_result.get("birads_class", ""),
+        "risk_assessment": old_result.get("ai_risk_assessment", "Low"),
+        "inconsistency_alert": old_result.get("inconsistency_alert", False),
+        "inconsistency_reasons": old_result.get("inconsistency_reasons", []),
+    }
+
+    return {
+        "patient_gender": old_result.get("patient_gender", "Unknown"),
+        "nodules": [nodule],
+        "overall_assessment": {
+            "total_nodules": 1,
+            "highest_risk": old_result.get("ai_risk_assessment", "Low"),
+            "summary": old_result.get("extracted_findings", []),
+            "advice": old_result.get("advice", ""),
+        },
+    }
+
+
 def _post_process_consistency_check(result: dict, ocr_text: str) -> dict:
     """
     后处理：通用的逻辑一致性检查（基于公理8）
 
+    支持新格式（结节列表）和旧格式（单一结果）
     使用LogicalConsistencyChecker进行通用的充要条件验证，
     不针对任何特定形态学特征写规则。
     """
     try:
+        # 转换为新格式（如果还是旧格式）
+        result = _convert_old_format_to_new(result)
+
         # 初始化逻辑一致性检查器
         checker = LogicalConsistencyChecker()
 
-        # 提取关键信息
         # 数据清理：如果值包含"/"，需要检查所有值，不能只取第一个（医疗产品不能丢失风险信息）
         def extract_primary_value(value: str) -> str:
             """
@@ -70,49 +136,65 @@ def _post_process_consistency_check(result: dict, ocr_text: str) -> dict:
                 return values[0] if values else ""
             return value.strip()
 
-        extracted_findings = {
-            "shape": extract_primary_value(result.get("extracted_shape", "")),
-            "boundary": extract_primary_value(result.get("extracted_boundary", "")),
-            "echo": extract_primary_value(result.get("extracted_echo", "")),
-            "orientation": extract_primary_value(result.get("extracted_orientation", "")),
-            "aspect_ratio": result.get("extracted_aspect_ratio"),
-            "malignant_signs": result.get("extracted_malignant_signs", []),
-        }
-        birads_class = result.get("birads_class", "")
+        # 对每个结节进行一致性检查
+        nodules = result.get("nodules", [])
+        highest_risk = "Low"
+        all_inconsistency_reasons = []
 
-        # 如果BI-RADS分类为空，无法检查
-        if not birads_class:
-            return result
+        for nodule in nodules:
+            morphology = nodule.get("morphology", {})
+            extracted_findings = {
+                "shape": extract_primary_value(morphology.get("shape", "")),
+                "boundary": extract_primary_value(morphology.get("boundary", "")),
+                "echo": extract_primary_value(morphology.get("echo", "")),
+                "orientation": extract_primary_value(morphology.get("orientation", "")),
+                "aspect_ratio": nodule.get("aspect_ratio"),
+                "malignant_signs": nodule.get("malignant_signs", []),
+            }
+            birads_class = nodule.get("birads_class", "")
 
-        # 执行通用的逻辑一致性检查
-        consistency_result = checker.check_consistency(extracted_findings, birads_class)
+            # 如果BI-RADS分类为空，跳过检查
+            if not birads_class:
+                continue
 
-        # 如果检测到不一致，更新结果
-        if consistency_result["inconsistency"]:
-            result["inconsistency_alert"] = True
-            result["inconsistency_reasons"] = consistency_result["violations"]
+            # 执行通用的逻辑一致性检查
+            consistency_result = checker.check_consistency(extracted_findings, birads_class)
 
-            # 更新风险评估（如果当前评估低于检查结果）
-            current_risk = result.get("ai_risk_assessment", "Low")
-            checked_risk = consistency_result["risk_assessment"]
+            # 如果检测到不一致，更新结节结果
+            if consistency_result["inconsistency"]:
+                nodule["inconsistency_alert"] = True
+                nodule["inconsistency_reasons"] = consistency_result["violations"]
+                all_inconsistency_reasons.extend(consistency_result["violations"])
 
-            # 风险等级：Low < Medium < High
-            risk_levels = {"Low": 1, "Medium": 2, "High": 3}
-            if risk_levels.get(checked_risk, 0) > risk_levels.get(current_risk, 0):
-                result["ai_risk_assessment"] = checked_risk
-                logger.warning(
-                    f"逻辑一致性检查发现不一致：{consistency_result['violations']}，" f"已提升风险评估为{checked_risk}"
-                )
+                # 更新风险评估（如果当前评估低于检查结果）
+                current_risk = nodule.get("risk_assessment", "Low")
+                checked_risk = consistency_result["risk_assessment"]
 
-            # 如果不一致但建议中没有提到，补充建议
-            advice = result.get("advice", "")
-            if "不一致" not in advice and "重新评估" not in advice:
-                result["advice"] = (
-                    f"{advice} "
-                    f"⚠️ 注意：报告中描述的特征与BI-RADS分类存在不一致："
-                    f"{'; '.join(consistency_result['violations'])}。"
-                    f"建议重新评估或进一步检查。"
-                )
+                # 风险等级：Low < Medium < High
+                risk_levels = {"Low": 1, "Medium": 2, "High": 3}
+                if risk_levels.get(checked_risk, 0) > risk_levels.get(current_risk, 0):
+                    nodule["risk_assessment"] = checked_risk
+                    logger.warning(
+                        f"结节{nodule.get('id', 'unknown')}逻辑一致性检查发现不一致："
+                        f"{consistency_result['violations']}，已提升风险评估为{checked_risk}"
+                    )
+
+                # 更新最高风险
+                if risk_levels.get(checked_risk, 0) > risk_levels.get(highest_risk, 0):
+                    highest_risk = checked_risk
+
+        # 更新整体评估
+        if nodules:
+            result["overall_assessment"]["highest_risk"] = highest_risk
+            if all_inconsistency_reasons:
+                advice = result["overall_assessment"].get("advice", "")
+                if "不一致" not in advice and "重新评估" not in advice:
+                    result["overall_assessment"]["advice"] = (
+                        f"{advice} "
+                        f"⚠️ 注意：报告中描述的特征与BI-RADS分类存在不一致："
+                        f"{'; '.join(set(all_inconsistency_reasons))}。"
+                        f"建议重新评估或进一步检查。"
+                    )
 
     except Exception as e:
         log_error_with_context(logger, e, context={"result": result}, operation="后处理逻辑一致性检查")
@@ -182,48 +264,94 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
         # RAG检索失败不影响LLM分析，继续执行
 
     # 2. 定义 System Prompt (人设与规则)
-    # 优化：精简prompt长度，保持功能完整性
+    # 版本1.1.0：支持多个结节识别和分离
     system_prompt = (
         """你是MedCrux医学影像分析助手，基于OCR文本进行事实核查。
 
-步骤：
-1. **提取事实**：提取形态学描述（大小、形状、边缘、回声、纵横比、血流、钙化等）。
-   - 必须提取形状（包括非标准术语如"条状"、"条索状"）
-   - 必须提取边界、回声、方位等所有特征
+重要：请识别报告中的所有结节，为每个结节提取完整信息。
 
-2. **术语标准化**：
+步骤：
+1. **识别所有结节**：
+   - 仔细阅读报告，识别所有提到的结节
+   - 为每个结节分配唯一ID（nodule_1, nodule_2等）
+   - 如果报告中没有明确提到结节，返回空列表
+
+2. **提取每个结节的信息**：
+   a. **位置信息**（必须提取）：
+      - breast：左乳/右乳
+      - quadrant：象限（上内/上外/下内/下外/中央区）
+      - clock_position：钟点位置（12点/3点/6点/9点等，如"12点"、"3点"）
+      - distance_from_nipple：距乳头距离（单位：cm，如"2.5 cm"）
+
+   b. **形态学特征**（必须提取）：
+      - shape：形状（椭圆形/圆形/不规则形/条状/条索状/其他）
+      - boundary：边界（清晰/大部分清晰/模糊/成角/微小分叶/毛刺状）
+      - echo：回声（均匀低回声/不均匀回声/无回声/等回声/高回声/复合回声）
+      - orientation：方位（平行/不平行）
+      - size：大小（格式：长径×横径×前后径 cm，如"1.2×0.8×0.6 cm"）
+
+   c. **其他信息**：
+      - malignant_signs：恶性征象列表（如有）
+      - birads_class：BI-RADS分级
+      - risk_assessment：风险评估（Low/Medium/High）
+
+3. **术语标准化**：
    - 标准术语：形状{椭圆形,圆形,不规则形} 边界{清晰,大部分清晰,模糊,成角,微小分叶,毛刺状}
      回声{均匀低回声,不均匀回声,无回声,等回声,高回声,复合回声} 方位{平行,不平行}
    - 同义词处理："清楚"→"清晰" "circumscribed"→"清晰" "低回声"（未明确"均匀"）保持为"低回声"
    - 非标准术语：保持原样输出（如"条状"保持为"条状"，不标准化为"椭圆形"）
 
-3. **提取结论**：提取BI-RADS分级
-
 4. **逻辑一致性检查**：
-   - 对照BI-RADS分类充要条件检查提取特征
+   - 对照BI-RADS分类充要条件检查每个结节的特征
    - 不符合充要条件必须识别为不一致
    - 示例（BI-RADS 3类）：形状椭圆形、边界清晰/大部分清晰、回声均匀低回声（"低回声"≠"均匀低回声"）、方位平行、无恶性征象
 
-5. **评估风险**：高风险（恶性征象+2/3类）、中风险（特征不符但不涉及恶性）、低风险（轻微不符）
+5. **整体评估**：
+   - total_nodules：结节总数
+   - highest_risk：所有结节中的最高风险等级
+   - summary：整体评估摘要
+   - advice：综合建议
 
 返回JSON（无markdown）：
 {
     "patient_gender": "Unknown/Female/Male",
-    "extracted_findings": ["描述1", "描述2"],
-    "extracted_shape": "椭圆形/圆形/不规则形/条状/条索状/其他",
-    "extracted_boundary": "清晰/不清晰/模糊/成角/毛刺状/其他",
-    "extracted_echo": "均匀低回声/不均匀回声/其他",
-    "extracted_orientation": "平行/不平行/其他",
-    "extracted_malignant_signs": ["恶性征象1", "恶性征象2"],
-    "original_conclusion": "报告原本的结论",
-    "birads_class": "3",
-    "ai_risk_assessment": "Low/Medium/High",
-    "inconsistency_alert": true/false,
-    "inconsistency_reasons": ["原因1", "原因2"],
-    "advice": "给患者的建议"
+    "nodules": [
+        {
+            "id": "nodule_1",
+            "location": {
+                "breast": "left/right",
+                "quadrant": "上内/上外/下内/下外/中央区",
+                "clock_position": "12点/3点/6点/9点/其他",
+                "distance_from_nipple": "X cm"
+            },
+            "morphology": {
+                "shape": "椭圆形/圆形/不规则形/条状/条索状/其他",
+                "boundary": "清晰/大部分清晰/模糊/成角/微小分叶/毛刺状",
+                "echo": "均匀低回声/不均匀回声/无回声/等回声/高回声/复合回声",
+                "orientation": "平行/不平行",
+                "size": "长径×横径×前后径 cm"
+            },
+            "malignant_signs": ["恶性征象1", "恶性征象2"],
+            "birads_class": "3",
+            "risk_assessment": "Low/Medium/High",
+            "inconsistency_alert": true/false,
+            "inconsistency_reasons": ["原因1", "原因2"]
+        }
+    ],
+    "overall_assessment": {
+        "total_nodules": 1,
+        "highest_risk": "Low/Medium/High",
+        "summary": "整体评估摘要",
+        "advice": "综合建议"
+    }
 }
 
-要求：必须提取所有形态学特征和BI-RADS分类；如检测到不一致，必须在inconsistency_reasons中说明原因。"""
+要求：
+- 必须识别所有结节，不能遗漏
+- 必须提取每个结节的位置信息（如果报告中提到）
+- 必须提取所有形态学特征和BI-RADS分类
+- 如检测到不一致，必须在inconsistency_reasons中说明原因
+- 如果报告中没有结节，返回空列表：{"nodules": [], "overall_assessment": {"total_nodules": 0, ...}}"""
         + rag_context
     )
 
@@ -257,15 +385,21 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
         content = response.choices[0].message.content
         result = json.loads(content)
 
-        # 4. 后处理：逻辑一致性检查（如果LLM没有正确执行）
+        # 4. 格式转换：确保是新格式（如果LLM返回旧格式，转换为新格式）
+        result = _convert_old_format_to_new(result)
+
+        # 5. 后处理：逻辑一致性检查（如果LLM没有正确执行）
         post_process_start = time.time()
         result = _post_process_consistency_check(result, ocr_text)
         post_process_time = time.time() - post_process_start
 
         total_llm_time = time.time() - llm_start_time
+        nodules_count = len(result.get("nodules", []))
+        highest_risk = result.get("overall_assessment", {}).get("highest_risk", "Unknown")
+        has_inconsistency = any(n.get("inconsistency_alert", False) for n in result.get("nodules", []))
         logger.info(
-            f"AI分析完成 [风险评估: {result.get('ai_risk_assessment', 'Unknown')}, "
-            f"不一致预警: {result.get('inconsistency_alert', False)}, "
+            f"AI分析完成 [结节数: {nodules_count}, 最高风险: {highest_risk}, "
+            f"不一致预警: {has_inconsistency}, "
             f"总耗时: {total_llm_time:.2f}秒 (API: {llm_api_time:.2f}秒, 后处理: {post_process_time:.2f}秒)]"
         )
         return result
