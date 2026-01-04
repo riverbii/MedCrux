@@ -36,6 +36,59 @@ client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 _retriever: GraphRAGRetriever | None = None
 
 
+def _post_process_consistency_check(result: dict, ocr_text: str) -> dict:
+    """
+    后处理：逻辑一致性检查（如果LLM没有正确执行）
+
+    基于公理8，检查提取的事实是否符合BI-RADS分类的充要条件
+    """
+    # 标准术语集合（基于公理5.3）
+    STANDARD_SHAPES = {"椭圆形", "圆形", "不规则形", "oval", "round", "irregular"}
+
+    # 提取关键信息
+    extracted_shape = result.get("extracted_shape", "").lower()
+    birads_class = result.get("birads_class", "")
+    inconsistency_reasons = result.get("inconsistency_reasons", [])
+
+    # 检查BI-RADS 3类的一致性
+    if birads_class == "3":
+        # 检查形状是否符合3类定义（要求椭圆形）
+        if extracted_shape:
+            # 检查是否包含"椭圆"
+            is_oval = "椭圆" in extracted_shape or "oval" in extracted_shape
+            # 检查是否包含非标准术语（如"条状"、"条索"等）
+            is_non_standard = any(
+                keyword in extracted_shape for keyword in ["条状", "条索", "条", "linear", "ductal", "striped"]
+            )
+
+            # 如果形状不在标准集合中，且不是椭圆形，则不一致
+            if is_non_standard or (extracted_shape not in STANDARD_SHAPES and not is_oval):
+                if not result.get("inconsistency_alert", False):
+                    result["inconsistency_alert"] = True
+                    inconsistency_reasons.append(
+                        f"形状描述为'{result.get('extracted_shape', '未知')}'，" f"不符合BI-RADS 3类要求的椭圆形"
+                    )
+
+                # 如果风险评估不是High，且涉及非标准形状，提升为中风险
+                if result.get("ai_risk_assessment") == "Low":
+                    result["ai_risk_assessment"] = "Medium"
+                    logger.warning(
+                        f"检测到形状不一致：{result.get('extracted_shape')} + BI-RADS 3类，" f"已提升风险评估为Medium"
+                    )
+
+    # 更新不一致原因列表
+    if inconsistency_reasons:
+        result["inconsistency_reasons"] = inconsistency_reasons
+        # 如果不一致但建议中没有提到，补充建议
+        advice = result.get("advice", "")
+        if "不一致" not in advice and "重新评估" not in advice:
+            result["advice"] = (
+                f"{advice} " f"⚠️ 注意：报告中描述的特征与BI-RADS分类存在不一致，" f"建议重新评估或进一步检查。"
+            )
+
+    return result
+
+
 def _get_retriever() -> GraphRAGRetriever:
     """获取GraphRAG检索器实例（单例模式）"""
     global _retriever
@@ -97,26 +150,38 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
 
     请遵循以下步骤：
     1. **提取事实**：从混乱的 OCR 文本中提取关于病灶的形态学描述（大小、形状、边缘、回声、纵横比、血流、钙化等）。
+       - **重要**：必须提取形状描述，即使是非标准术语（如"条状"、"条索状"等）也要提取。
+       - **重要**：必须提取边界、回声、方位等所有形态学特征。
+
     2. **提取结论**：提取报告中原本的 BI-RADS 分级结论。
-    3. **逻辑一致性检查**：(关键步骤) 对照 ACR BI-RADS 标准，检查"描述"与"结论"是否一致。
 
-    **逻辑一致性检查规则**（必须严格执行，基于公理8）：
+    3. **术语标准化检查**（基于公理5）：
+       - 检查提取的形状是否在标准术语集合中：{椭圆形, 圆形, 不规则形}
+       - 如果不在标准集合中（如"条状"、"条索状"等），标记为非标准术语
+       - **非标准术语 ≠ 椭圆形**，如果BI-RADS分类要求椭圆形，则不一致
 
-    系统必须对照BI-RADS分类的定义要求（公理3），检查提取的事实描述是否与分类结论一致：
+    4. **逻辑一致性检查**（关键步骤，基于公理8）：
+       对照BI-RADS分类的充要条件（公理3），检查提取的事实是否满足该充要条件：
 
-    1. **对照分类定义**：将提取的形态学特征（形状、边界、回声、方位等）与公理3中该BI-RADS分类
-       的定义要求进行对照。如果提取的特征不符合该分类的定义要求，**必须**识别为不一致。
+       **BI-RADS 3类的充要条件**（必须全部满足）：
+       - 形状：椭圆形（oval）
+       - 边界：清晰或大部分清晰（circumscribed或mostly circumscribed）
+       - 回声：均匀低回声（homogeneous hypoechoic）
+       - 方位：平行（parallel，纵横比<1）
+       - 无恶性征象
 
-    2. **检查排除条件**：如果提取的特征属于该分类的排除条件（如BI-RADS 2类和3类要求无恶性征象），
-       **必须**识别为不一致。
+       **检查逻辑**：
+       - 如果提取的形状不是椭圆形（包括非标准术语如"条状"、"条索状"等），但结论是BI-RADS 3类，
+         **必须**识别为不一致（inconsistency_alert: true）
+       - 如果提取的边界不清晰，但结论是BI-RADS 3类，**必须**识别为不一致
+       - 如果提取的回声不是均匀低回声，但结论是BI-RADS 3类，**必须**识别为不一致
+       - 如果提取的方位不是平行（纵横比≥1），但结论是BI-RADS 3类，**必须**识别为不一致
+       - 如果提取到任何恶性征象，但结论是BI-RADS 2类或3类，**必须**识别为不一致
 
-    3. **评估不一致严重程度**：
+    5. **评估不一致严重程度**：
        - **高风险**：提取到恶性征象但分类为2类或3类，或提取的特征明显违反分类定义且提示恶性可能
-       - **中风险**：提取的特征不符合分类定义，但不涉及明确的恶性征象
+       - **中风险**：提取的特征不符合分类定义（如形状不是椭圆形），但不涉及明确的恶性征象
        - **低风险**：提取的特征与分类定义存在轻微不符
-
-    **通用性原则**：不针对任何特定形态学特征制定规则，而是基于BI-RADS分类的通用定义，
-    自动识别任何不符合分类定义的情况。
 
     请以纯 JSON 格式返回结果，不要包含 markdown 格式标记。JSON 结构如下：
     {
@@ -159,7 +224,13 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
         content = response.choices[0].message.content
         result = json.loads(content)
 
-        logger.info(f"AI分析完成 [风险评估: {result.get('ai_risk_assessment', 'Unknown')}]")
+        # 4. 后处理：逻辑一致性检查（如果LLM没有正确执行）
+        result = _post_process_consistency_check(result, ocr_text)
+
+        logger.info(
+            f"AI分析完成 [风险评估: {result.get('ai_risk_assessment', 'Unknown')}, "
+            f"不一致预警: {result.get('inconsistency_alert', False)}]"
+        )
         return result
 
     except json.JSONDecodeError as e:
