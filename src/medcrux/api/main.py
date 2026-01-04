@@ -38,7 +38,7 @@ async def health_check():
     健康检查接口：用于监控系统确认服务是否存活
     """
     logger.info("健康检查请求")
-    return {"status": "operational", "version": "0.1.0"}
+    return {"status": "operational", "version": "1.0.0"}
 
 
 @app.post("/analyze/upload", response_model=AnalysisResponse)
