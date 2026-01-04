@@ -100,12 +100,69 @@ async def analyze_report(file: UploadFile = File(...)):
                 "message": "OCR识别完成，但AI分析失败。",
             }
 
-        # 5. 返回结果
+        # 5. 格式适配：为了向后兼容，将新格式转换为旧格式（临时方案，阶段2会更新UI）
+        # 新格式：{"nodules": [...], "overall_assessment": {...}}
+        # 旧格式：{"extracted_shape": "...", "ai_risk_assessment": "...", ...}
+        def convert_new_to_old_format(new_result: dict) -> dict:
+            """将新格式（结节列表）转换为旧格式（单一结果），用于UI向后兼容"""
+            # 如果已经是旧格式，直接返回
+            if "extracted_shape" in new_result or "nodules" not in new_result:
+                return new_result
+
+            # 获取第一个结节（如果有）
+            nodules = new_result.get("nodules", [])
+            overall_assessment = new_result.get("overall_assessment", {})
+
+            if not nodules:
+                # 无结节情况
+                return {
+                    "patient_gender": new_result.get("patient_gender", "Unknown"),
+                    "extracted_findings": overall_assessment.get("summary", []),
+                    "extracted_shape": "未提取",
+                    "extracted_boundary": "未提取",
+                    "extracted_echo": "未提取",
+                    "extracted_orientation": "未提取",
+                    "extracted_malignant_signs": [],
+                    "original_conclusion": "",
+                    "birads_class": "",
+                    "ai_risk_assessment": overall_assessment.get("highest_risk", "Low"),
+                    "inconsistency_alert": False,
+                    "inconsistency_reasons": [],
+                    "advice": overall_assessment.get("advice", ""),
+                }
+
+            # 使用第一个结节的数据
+            first_nodule = nodules[0]
+            morphology = first_nodule.get("morphology", {})
+
+            return {
+                "patient_gender": new_result.get("patient_gender", "Unknown"),
+                "extracted_findings": overall_assessment.get("summary", []),
+                "extracted_shape": morphology.get("shape", ""),
+                "extracted_boundary": morphology.get("boundary", ""),
+                "extracted_echo": morphology.get("echo", ""),
+                "extracted_orientation": morphology.get("orientation", ""),
+                "extracted_malignant_signs": first_nodule.get("malignant_signs", []),
+                "original_conclusion": "",
+                "birads_class": first_nodule.get("birads_class", ""),
+                "ai_risk_assessment": overall_assessment.get(
+                    "highest_risk", first_nodule.get("risk_assessment", "Low")
+                ),
+                "inconsistency_alert": first_nodule.get("inconsistency_alert", False),
+                "inconsistency_reasons": first_nodule.get("inconsistency_reasons", []),
+                "advice": overall_assessment.get("advice", ""),
+                # 保留新格式数据，供阶段2使用
+                "_new_format": new_result,
+            }
+
+        ai_result_for_ui = convert_new_to_old_format(ai_analysis)
+
+        # 6. 返回结果
         logger.info(f"分析完成 [文件: {file.filename}]")
         return {
             "filename": file.filename,
             "ocr_text": raw_text,
-            "ai_result": ai_analysis,
+            "ai_result": ai_result_for_ui,
             "message": "分析完成",
         }
 
