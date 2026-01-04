@@ -197,11 +197,23 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
     {
         "patient_gender": "Unknown/Female/Male",
         "extracted_findings": ["描述1", "描述2"],
+        "extracted_shape": "椭圆形/圆形/不规则形/条状/条索状/其他",
+        "extracted_boundary": "清晰/不清晰/模糊/成角/毛刺状/其他",
+        "extracted_echo": "均匀低回声/不均匀回声/其他",
+        "extracted_orientation": "平行/不平行/其他",
+        "extracted_malignant_signs": ["恶性征象1", "恶性征象2"],
         "original_conclusion": "报告原本的结论",
+        "birads_class": "3",
         "ai_risk_assessment": "Low/Medium/High",
-        "inconsistency_alert": true/false, (如果描述与结论不符则为 true)
+        "inconsistency_alert": true/false,
+        "inconsistency_reasons": ["原因1", "原因2"],
         "advice": "给患者的建议"
     }
+
+    **关键要求**：
+    - 必须提取形状、边界、回声、方位等所有形态学特征
+    - 必须提取BI-RADS分类（birads_class字段）
+    - 如果检测到不一致，必须在inconsistency_reasons中说明具体原因
     """
         + rag_context
     )
