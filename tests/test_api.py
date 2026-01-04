@@ -20,7 +20,7 @@ class TestAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "operational"
-        assert data["version"] == "1.0.0"
+        assert data["version"] == "1.2.0"
 
     @patch("medcrux.api.main.analyze_text_with_deepseek")
     @patch("medcrux.api.main.extract_text_from_bytes")

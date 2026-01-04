@@ -17,7 +17,7 @@ from medcrux.utils.logger import log_error_with_context, setup_logger
 # 初始化logger
 logger = setup_logger("medcrux.api")
 
-app = FastAPI(title="MedCrux API", version="0.1.0")
+app = FastAPI(title="MedCrux API", version="1.2.0")
 
 
 class HealthResponse(BaseModel):
@@ -38,7 +38,7 @@ async def health_check():
     健康检查接口：用于监控系统确认服务是否存活
     """
     logger.info("健康检查请求")
-    return {"status": "operational", "version": "1.0.0"}
+    return {"status": "operational", "version": "1.2.0"}
 
 
 @app.post("/analyze/upload", response_model=AnalysisResponse)
