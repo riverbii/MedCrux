@@ -39,6 +39,12 @@ def extract_text_from_bytes(image_bytes: bytes) -> str:
     context = {"image_size": len(image_bytes)}
     logger.debug(f"开始OCR识别 [图片大小: {len(image_bytes)} bytes]")
 
+    # 检查空字节流
+    if not image_bytes or len(image_bytes) == 0:
+        error_msg = "图片字节流为空"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
     try:
         # 1. 将字节流转换为 numpy 数组 (这是 OpenCV 能看懂的格式)
         nparr = np.frombuffer(image_bytes, np.uint8)

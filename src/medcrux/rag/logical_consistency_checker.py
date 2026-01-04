@@ -92,10 +92,11 @@ class LogicalConsistencyChecker:
         else:
             return {"is_standard": False, "standard_term": None, "non_standard": extracted_value}
 
-        # 检查是否在标准集合中（直接匹配）
+        # 检查是否在标准集合中（精确匹配）
         # 注意：LLM应该在提取阶段已经处理了同义词、近义词等语言问题
+        # 使用精确匹配，避免"圆形"匹配到"椭圆形"，"低回声"匹配到"均匀低回声"
         for standard_term in standard_set:
-            if standard_term.lower() in extracted_lower or extracted_lower in standard_term.lower():
+            if standard_term.lower() == extracted_lower:
                 return {"is_standard": True, "standard_term": standard_term, "non_standard": None}
 
         # 不在标准集合中
@@ -146,10 +147,10 @@ class LogicalConsistencyChecker:
                     required_shape_cn = list(conditions["shape"])[0]
                     violations.append(f"形状不符合：要求{required_shape_cn}，实际为{extracted_shape}（非标准术语）")
                 else:
-                    # 如果是标准术语，检查是否满足要求
+                    # 如果是标准术语，检查是否满足要求（精确匹配）
                     shape_satisfies = False
                     for required_shape in conditions["shape"]:
-                        if required_shape in extracted_shape or extracted_shape in required_shape:
+                        if required_shape == extracted_shape:
                             shape_satisfies = True
                             break
 
@@ -282,10 +283,14 @@ class LogicalConsistencyChecker:
         if malignant_signs:
             return "High"
 
-        # 检查是否违反关键定义（形状、边界等）
+        # 检查是否违反关键定义（恶性征象为高风险，其他为中风险）
         violations = condition_result["violations"]
-        if any("形状" in v or "边界" in v or "恶性征象" in v for v in violations):
+        if any("恶性征象" in v for v in violations):
             return "High"
+
+        # 非标准术语（如"条状"）违反形状要求，但无恶性征象，应为中风险
+        # 标准术语不符合要求（如"不规则形"不符合"椭圆形"），但无恶性征象，应为中风险
+        # 只有明确涉及恶性征象的才是高风险
 
         # 其他不一致为中风险
         return "Medium"
