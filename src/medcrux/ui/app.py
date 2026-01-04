@@ -36,7 +36,18 @@ with st.sidebar:
     st.info("后端 API 状态监控")
 
 # --- 主界面 ---
-st.title("上传医学影像报告")
+col_title, col_version = st.columns([4, 1])
+with col_title:
+    st.title("上传医学影像报告")
+with col_version:
+    # 显示版本号
+    try:
+        health_res = requests.get(f"{API_BASE_URL}/health", timeout=1)
+        if health_res.status_code == 200:
+            version = health_res.json().get("version", "1.0.0")
+            st.caption(f"v{version}")
+    except Exception:
+        st.caption("v1.0.0")
 
 # --- 数据隐私说明（文件上传区域） ---
 st.info("🔒 **数据隐私**：所有处理在本地完成，数据不会上传到服务器。您的报告图片仅在本地处理，不会存储或上传。")
