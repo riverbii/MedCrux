@@ -132,20 +132,30 @@ class LogicalConsistencyChecker:
         violations = []
 
         # 检查形状（如果该分类有形状要求）
-        # 注意：extracted_shape应该已经由LLM标准化为标准术语（包括同义词处理）
+        # 注意：extracted_shape可能是标准术语（如"椭圆形"），也可能是非标准术语（如"条状"）
+        # LLM已处理同义词（如"清楚" → "清晰"），但非标准术语保持原样
         if "shape" in conditions:
             extracted_shape = extracted_findings.get("shape", "")
             if extracted_shape:
-                # 检查提取的形状是否满足要求（直接匹配，LLM已处理同义词）
-                shape_satisfies = False
-                for required_shape in conditions["shape"]:
-                    if required_shape in extracted_shape or extracted_shape in required_shape:
-                        shape_satisfies = True
-                        break
+                # 先检查是否为标准术语
+                term_check = self.check_terminology(extracted_shape, "shape")
+                is_standard = term_check["is_standard"]
 
-                if not shape_satisfies:
+                # 如果非标准术语，直接判断为不符合要求
+                if not is_standard:
                     required_shape_cn = list(conditions["shape"])[0]
-                    violations.append(f"形状不符合：要求{required_shape_cn}，实际为{extracted_shape}")
+                    violations.append(f"形状不符合：要求{required_shape_cn}，实际为{extracted_shape}（非标准术语）")
+                else:
+                    # 如果是标准术语，检查是否满足要求
+                    shape_satisfies = False
+                    for required_shape in conditions["shape"]:
+                        if required_shape in extracted_shape or extracted_shape in required_shape:
+                            shape_satisfies = True
+                            break
+
+                    if not shape_satisfies:
+                        required_shape_cn = list(conditions["shape"])[0]
+                        violations.append(f"形状不符合：要求{required_shape_cn}，实际为{extracted_shape}")
 
         # 检查边界（如果该分类有边界要求）
         # 注意：extracted_boundary应该已经由LLM标准化为标准术语（包括同义词处理）

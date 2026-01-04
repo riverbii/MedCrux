@@ -175,8 +175,14 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
          * 例如："清楚" → "清晰"（同义词）
          * 例如："circumscribed" → "清晰"（英文→中文）
          * 例如："低回声" → 如果未明确"均匀"，保持为"低回声"（不能假设为"均匀低回声"）
-       - **输出要求**：extracted_shape、extracted_boundary、extracted_echo、extracted_orientation
-         必须使用标准术语，不要输出同义词或非标准术语
+       - **非标准术语处理**：
+         * 如果提取的形状不在标准术语集合中（如"条状"、"条索状"等），**必须保持原样输出**，不要标准化为标准术语
+         * 系统会在后续逻辑一致性检查中识别非标准术语与分类要求的不一致
+         * 例如：如果报告中写了"条状低回声"，extracted_shape应该输出"条状"（不是"椭圆形"或"不规则形"）
+       - **输出要求**：
+         * extracted_shape、extracted_boundary、extracted_echo、extracted_orientation
+         * 如果是标准术语，使用标准术语；如果是非标准术语，保持原样输出
+         * 不要将非标准术语错误地标准化为标准术语（如"条状"不能标准化为"椭圆形"）
 
     3. **提取结论**：提取报告中原本的 BI-RADS 分级结论。
 
