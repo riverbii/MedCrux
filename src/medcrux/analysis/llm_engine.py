@@ -70,7 +70,7 @@ def _convert_old_format_to_new(old_result: dict) -> dict:
     nodule = {
         "id": "nodule_1",
         "location": {
-            "breast": old_result.get("patient_gender", "Unknown"),
+            "breast": old_result.get("extracted_breast", ""),
             "quadrant": old_result.get("extracted_quadrant", ""),
             "clock_position": old_result.get("extracted_clock_position", ""),
             "distance_from_nipple": old_result.get("extracted_distance_from_nipple", ""),
