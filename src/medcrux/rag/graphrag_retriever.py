@@ -112,36 +112,52 @@ class GraphRAGRetriever:
             }
 
     def _match_entities(self, query: str) -> list[dict]:
-        """根据查询文本匹配相关实体"""
+        """
+        根据查询文本匹配相关实体（性能优化版本）
+
+        优化策略：
+        1. 先提取查询关键词
+        2. 快速过滤：只检查包含关键词的实体
+        3. 减少字符串操作
+        """
         matched_entities = []
         query_lower = query.lower()
+        query_words = set(query_lower.split())
 
+        # 如果查询为空，返回空列表
+        if not query_words:
+            return []
+
+        # 快速过滤：只检查实体名称或ID中包含查询关键词的实体
         for entity_id, entity in self.entities.items():
             score = 0.0
-
-            # 匹配实体名称
-            if entity.get("name"):
-                name_lower = entity["name"].lower()
-                if name_lower in query_lower or query_lower in name_lower:
-                    score += 0.5
-
-            # 匹配实体内容
-            if entity.get("content"):
-                content_lower = entity["content"].lower()
-                # 计算关键词匹配度
-                query_words = set(query_lower.split())
-                content_words = set(content_lower.split())
-                common_words = query_words & content_words
-                if common_words:
-                    score += len(common_words) / max(len(query_words), len(content_words))
-
-            # 匹配实体ID中的关键词（如birads_3, malignant_毛刺状边界）
             entity_id_lower = entity_id.lower()
-            for word in query_lower.split():
-                if word in entity_id_lower:
-                    score += 0.3
 
-            if score > 0.1:  # 阈值
+            # 1. 快速检查：实体ID是否包含查询关键词（最快）
+            for word in query_words:
+                if word in entity_id_lower:
+                    score += 0.5
+                    break  # 找到匹配就跳出，避免重复计算
+
+            # 2. 匹配实体名称（如果还没有匹配）
+            if score < 0.3 and entity.get("name"):
+                name_lower = entity["name"].lower()
+                for word in query_words:
+                    if word in name_lower:
+                        score += 0.4
+                        break
+
+            # 3. 匹配实体内容（只在前面匹配度较低时进行，避免全文搜索）
+            if score < 0.5 and entity.get("content"):
+                content_lower = entity["content"].lower()
+                # 只检查前200个字符，避免全文搜索
+                content_preview = content_lower[:200]
+                common_words = query_words & set(content_preview.split())
+                if common_words:
+                    score += min(len(common_words) * 0.2, 0.3)
+
+            # 只添加有意义的匹配（提高阈值，减少结果数量）
+            if score > 0.3:  # 提高阈值，减少匹配数量
                 matched_entities.append(
                     {
                         "id": entity_id,
@@ -152,8 +168,8 @@ class GraphRAGRetriever:
 
         # 按分数排序
         matched_entities.sort(key=lambda x: x["score"], reverse=True)
-        # 返回前20个最相关的实体
-        return [e["entity"] for e in matched_entities[:20]]
+        # 返回前10个最相关的实体（减少数量，提高性能）
+        return [e["entity"] for e in matched_entities[:10]]
 
     def _get_relations_for_entities(self, entity_ids: list[str]) -> list[dict]:
         """获取与实体相关的关系"""

@@ -132,18 +132,19 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
         if retrieval_result["entities"]:
             rag_context = "\n\n## 相关医学知识（来自RAG知识库）：\n\n"
 
-            # 添加相关实体
+            # 添加相关实体（减少数量，提高性能）
             rag_context += "### 相关医学概念和规则：\n"
-            for entity in retrieval_result["entities"][:10]:  # 最多10个实体
+            for entity in retrieval_result["entities"][:5]:  # 减少到5个实体
                 entity_name = entity.get("name", "")
                 entity_content = entity.get("content", "")
                 if entity_name and entity_content:
-                    rag_context += f"- **{entity_name}**：{entity_content[:200]}...\n"
+                    # 减少内容长度，只取前150字符
+                    rag_context += f"- **{entity_name}**：{entity_content[:150]}...\n"
 
-            # 添加相关关系（推理路径）
+            # 添加相关关系（推理路径，减少数量）
             if retrieval_result["inference_paths"]:
                 rag_context += "\n### 逻辑推理路径：\n"
-                for path in retrieval_result["inference_paths"][:5]:  # 最多5条路径
+                for path in retrieval_result["inference_paths"][:3]:  # 减少到3条路径
                     rag_context += f"- {' → '.join(path)}\n"
 
             logger.info(
