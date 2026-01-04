@@ -50,11 +50,20 @@ def _post_process_consistency_check(result: dict, ocr_text: str) -> dict:
         checker = LogicalConsistencyChecker()
 
         # 提取关键信息
+        # 数据清理：如果值包含"/"，只取第一个值（主要值）
+        def clean_value(value: str) -> str:
+            """清理值，如果包含多个值（用/分隔），只取第一个"""
+            if not value:
+                return ""
+            if "/" in value:
+                return value.split("/")[0].strip()
+            return value.strip()
+
         extracted_findings = {
-            "shape": result.get("extracted_shape", ""),
-            "boundary": result.get("extracted_boundary", ""),
-            "echo": result.get("extracted_echo", ""),
-            "orientation": result.get("extracted_orientation", ""),
+            "shape": clean_value(result.get("extracted_shape", "")),
+            "boundary": clean_value(result.get("extracted_boundary", "")),
+            "echo": clean_value(result.get("extracted_echo", "")),
+            "orientation": clean_value(result.get("extracted_orientation", "")),
             "aspect_ratio": result.get("extracted_aspect_ratio"),
             "malignant_signs": result.get("extracted_malignant_signs", []),
         }

@@ -125,15 +125,26 @@ if uploaded_file is not None:
 
                     # 结构化展示提取的形态学特征（P0需求3）
                     st.markdown("#### 🔍 提取的形态学特征")
+
+                    # 数据清理函数：如果值包含"/"，只取第一个值（主要值）
+                    def clean_feature_value(value: str) -> str:
+                        """清理特征值，如果包含多个值（用/分隔），只取第一个"""
+                        if not value or value == "未提取":
+                            return "未提取"
+                        # 如果包含"/"，只取第一个值
+                        if "/" in value:
+                            return value.split("/")[0].strip()
+                        return value.strip()
+
                     col1, col2 = st.columns(2)
                     with col1:
-                        shape = ai_data.get("extracted_shape", "未提取")
-                        boundary = ai_data.get("extracted_boundary", "未提取")
+                        shape = clean_feature_value(ai_data.get("extracted_shape", "未提取"))
+                        boundary = clean_feature_value(ai_data.get("extracted_boundary", "未提取"))
                         st.markdown(f"- **形状**：{shape}")
                         st.markdown(f"- **边界**：{boundary}")
                     with col2:
-                        echo = ai_data.get("extracted_echo", "未提取")
-                        orientation = ai_data.get("extracted_orientation", "未提取")
+                        echo = clean_feature_value(ai_data.get("extracted_echo", "未提取"))
+                        orientation = clean_feature_value(ai_data.get("extracted_orientation", "未提取"))
                         st.markdown(f"- **回声**：{echo}")
                         st.markdown(f"- **方位**：{orientation}")
 
