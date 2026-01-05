@@ -21,10 +21,14 @@ if ! command -v uv &> /dev/null; then
     exit 1
 fi
 
-# 检查依赖是否已同步
-if [ ! -f "uv.lock" ]; then
-    echo "⚠️  警告: uv.lock文件不存在，正在同步依赖..."
+# 检查依赖是否已同步并安装包
+if [ ! -f "uv.lock" ] || [ ! -d ".venv" ]; then
+    echo "⚠️  警告: 依赖未同步，正在同步依赖..."
     uv sync
+else
+    # 确保包已安装（可编辑模式）
+    echo "📦 检查包安装状态..."
+    uv pip install -e . > /dev/null 2>&1 || uv sync
 fi
 
 # 检查环境变量
@@ -38,4 +42,6 @@ echo "✅ 使用uv运行服务..."
 echo ""
 
 # 使用uv run启动服务（uv会自动管理Python版本和依赖）
+# 设置PYTHONPATH确保能找到medcrux模块
+export PYTHONPATH="$PROJECT_ROOT/src:$PYTHONPATH"
 uv run uvicorn medcrux.api.main:app --reload --host 127.0.0.1 --port 8000
