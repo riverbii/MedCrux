@@ -6,13 +6,13 @@ echo "🚀 启动 MedCrux Frontend (React + Vite)"
 echo ""
 
 # 检查是否在项目根目录
-if [ ! -f "frontend/package.json" ]; then
+if [ ! -f "src/frontend/package.json" ]; then
     echo "❌ 错误: 请在项目根目录运行此脚本"
     exit 1
 fi
 
 # 进入frontend目录
-cd frontend || exit 1
+cd src/frontend || exit 1
 
 # 检查node_modules是否存在
 if [ ! -d "node_modules" ]; then

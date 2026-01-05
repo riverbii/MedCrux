@@ -17,9 +17,9 @@ cd /Users/bixinfang/project/MedCrux
 uv sync
 
 # 安装前端依赖
-cd frontend
+cd src/frontend
 npm install
-cd ..
+cd ../..
 ```
 
 ### 2. 设置环境变量（可选）
@@ -123,7 +123,7 @@ uv run uvicorn medcrux.api.main:app --reload --host 127.0.0.1 --port 8000
 
 ```bash
 # 1. 进入frontend目录
-cd /Users/bixinfang/project/MedCrux/frontend
+cd /Users/bixinfang/project/MedCrux/src/frontend
 
 # 2. 确保依赖已安装
 npm install
@@ -133,7 +133,7 @@ npm run dev
 ```
 
 **关键点**：
-- ✅ 必须在 `frontend` 目录运行
+- ✅ 必须在 `src/frontend` 目录运行
 - ✅ 使用 `npm run dev`（Vite开发服务器）
 
 ---
@@ -259,7 +259,7 @@ Request failed with status code 500
 - [ ] 健康检查返回正常：`curl http://localhost:8000/health`
 
 ### 前端启动检查
-- [ ] 在 `frontend` 目录运行
+- [ ] 在 `src/frontend` 目录运行
 - [ ] 已运行 `npm install`
 - [ ] 使用 `npm run dev` 启动
 - [ ] 看到 "VITE ready"
@@ -292,7 +292,7 @@ export PYTHONPATH="/Users/bixinfang/project/MedCrux/src:$PYTHONPATH"
 uv run uvicorn medcrux.api.main:app --reload --host 127.0.0.1 --port 8000
 
 # 终端2 - 前端
-cd /Users/bixinfang/project/MedCrux/frontend
+cd /Users/bixinfang/project/MedCrux/src/frontend
 npm install
 npm run dev
 ```
