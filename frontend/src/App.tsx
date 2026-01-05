@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import Navbar from './components/Navbar'
 import FileUpload from './components/FileUpload'
 import ImageDisplay from './components/ImageDisplay'
 import AnalysisStatus from './components/AnalysisStatus'
 import AbnormalFindings from './components/AbnormalFindings'
 import OverallAssessment from './components/OverallAssessment'
+import BreastDiagram from './components/BreastDiagram'
 import Disclaimer from './components/Disclaimer'
 import Footer from './components/Footer'
 import { AnalysisResult, AnalysisStatus as StatusType } from './types'
 import { analyzeReport, getHealth } from './services/api'
+
+// 懒加载模态框组件
+const PatientEducationModal = lazy(() => import('./components/PatientEducationModal'))
+const PrivacyModal = lazy(() => import('./components/PrivacyModal'))
 
 function App() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -137,6 +142,15 @@ function App() {
           {/* 异常发现和整体评估 */}
           {analysisResult && (
             <div className="space-y-6">
+              {/* 胸部示意图 */}
+              {analysisResult.findings.length > 0 && (
+                <BreastDiagram
+                  findings={analysisResult.findings}
+                  selectedId={selectedFindingId}
+                  onSelect={setSelectedFindingId}
+                />
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* 异常发现列表 - 响应式：移动端全宽，桌面端3列 */}
                 <div className="lg:col-span-3">

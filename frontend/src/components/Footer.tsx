@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import PrivacyModal from './PrivacyModal'
+import { useState, lazy, Suspense } from 'react'
+
+const PrivacyModal = lazy(() => import('./PrivacyModal'))
 
 export default function Footer() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false)
@@ -52,10 +53,12 @@ export default function Footer() {
         </div>
       </footer>
 
-      <PrivacyModal
-        isOpen={showPrivacyModal}
-        onClose={() => setShowPrivacyModal(false)}
-      />
+      <Suspense fallback={null}>
+        <PrivacyModal
+          isOpen={showPrivacyModal}
+          onClose={() => setShowPrivacyModal(false)}
+        />
+      </Suspense>
     </>
   )
 }

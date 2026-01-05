@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import Logo from './Logo'
-import PatientEducationModal from './PatientEducationModal'
+
+const PatientEducationModal = lazy(() => import('./PatientEducationModal'))
 
 export default function Navbar() {
   const [showEducationModal, setShowEducationModal] = useState(false)
@@ -83,10 +84,12 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <PatientEducationModal
-        isOpen={showEducationModal}
-        onClose={() => setShowEducationModal(false)}
-      />
+      <Suspense fallback={null}>
+        <PatientEducationModal
+          isOpen={showEducationModal}
+          onClose={() => setShowEducationModal(false)}
+        />
+      </Suspense>
 
       {/* 点击外部关闭菜单 */}
       {(showAnalysisMenu || showEducationMenu) && (
