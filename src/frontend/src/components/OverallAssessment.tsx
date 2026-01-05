@@ -87,7 +87,8 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
               </div>
             )}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* 不一致预警总结 */}
         {assessment.inconsistencyCount && assessment.inconsistencyCount > 0 && (
