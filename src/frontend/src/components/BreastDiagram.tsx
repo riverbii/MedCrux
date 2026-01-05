@@ -25,36 +25,36 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
     return 90.0 // 默认12点方向
   }
 
-  // 计算钟点位置的坐标
+  // 计算钟点位置的坐标（参考Streamlit版本的逻辑）
   const getClockPositionCoords = (
     clockPosition: string,
     distanceFromNipple: number | undefined,
     breast: 'left' | 'right',
-    diagramRadius: number = 85 // SVG坐标中的半径（0-100范围）
+    diagramRadius: number = 85 // SVG坐标中的半径（0-100范围，对应Streamlit的0.85）
   ) => {
     const angleDegrees = getClockPositionAngle(clockPosition)
     const angleRadians = (angleDegrees * Math.PI) / 180
     const centerX = 150
     const centerY = 150
     
-    // 计算半径
-    let finalRadius = diagramRadius * 0.45 // 默认位置（象限中心）
+    // 计算半径（参考Streamlit逻辑）
+    // 实际乳腺半径约7.5cm，示意图半径85（相对坐标，对应Streamlit的0.85）
+    const actualBreastRadius = 7.5 // cm
+    let r = diagramRadius * 0.45 // 默认半径（对应Streamlit的0.45）
     
-    if (distanceFromNipple) {
-      // 实际乳腺半径约7.5cm，示意图半径85（相对坐标）
-      const actualBreastRadius = 7.5 // cm
-      const ratio = Math.min(distanceFromNipple / actualBreastRadius, 0.9)
-      finalRadius = diagramRadius * ratio
-    } else {
-      // 如果没有距离信息，使用默认半径
-      finalRadius = diagramRadius * 0.45
+    if (distanceFromNipple && distanceFromNipple > 0) {
+      // 根据距离计算在示意图中的位置
+      const ratio = Math.min(distanceFromNipple / actualBreastRadius, 0.9) // 限制在90%以内
+      r = diagramRadius * ratio
     }
     
-    // 计算基础坐标
-    const xPosBase = finalRadius * Math.cos(angleRadians)
-    const yPos = finalRadius * Math.sin(angleRadians)
+    // 计算基础坐标（极坐标转直角坐标）
+    // 使用标准极坐标：x = r*cos(angle), y = r*sin(angle)
+    const xPosBase = r * Math.cos(angleRadians)
+    const yPos = r * Math.sin(angleRadians)
     
-    // 对于左乳：直接使用；对于右乳：镜像x坐标
+    // 对于左乳：直接使用
+    // 对于右乳：镜像x坐标（参考Streamlit逻辑）
     const xPos = breast === 'left' ? xPosBase : -xPosBase
     
     return {
@@ -77,8 +77,8 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
           {breast === 'left' ? '左乳' : '右乳'}
         </h4>
         <svg width="300" height="300" viewBox="0 0 300 300" className="border border-gray-200 rounded-lg bg-white">
-          {/* 绘制乳腺轮廓（简化版） */}
-          <ellipse cx="150" cy="150" rx="100" ry="120" fill="#fef3c7" stroke="#fbbf24" strokeWidth="2" />
+          {/* 绘制乳腺轮廓（正圆形，参考Streamlit版本） */}
+          <circle cx="150" cy="150" r="85" fill="#fef3c7" stroke="#1F2937" strokeWidth="2" />
           
           {/* 绘制钟点标记 */}
           {[12, 3, 6, 9].map((hour) => {

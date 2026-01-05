@@ -107,17 +107,82 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       }
     })
 
+    // 计算风险评估信息
+    const totalNodules = findings.length
+    const riskLevels = findings.map(f => f.risk)
+    const highestRisk = riskLevels.includes('High') ? 'High' : riskLevels.includes('Medium') ? 'Medium' : 'Low'
+    const riskDistribution = {
+      Low: riskLevels.filter(r => r === 'Low').length,
+      Medium: riskLevels.filter(r => r === 'Medium').length,
+      High: riskLevels.filter(r => r === 'High').length,
+    }
+    const inconsistencyCount = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0).length
+    const inconsistencySummary = findings
+      .filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
+      .map(f => `${f.name}：${f.inconsistencyAlerts.join('；')}`)
+
+    // 生成详细事实摘要（如果LLM返回的不够详细）
+    const llmSummary = typeof newFormat.overall_assessment?.summary === 'string' 
+      ? newFormat.overall_assessment.summary 
+      : Array.isArray(newFormat.overall_assessment?.summary)
+      ? newFormat.overall_assessment.summary.join(' ')
+      : ''
+    
+    const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
+    const summaryIsInsufficient = llmSummary.length < totalNodules * 50
+
+    let detailedFacts: string[] = []
+    if (summaryIsEmpty || summaryIsInsufficient) {
+      // 自动生成详细摘要
+      detailedFacts = findings.map((finding, index) => {
+        const parts: string[] = []
+        parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
+        
+        if (finding.size) {
+          parts.push(`大小${finding.size.length}×${finding.size.width}×${finding.size.depth}cm`)
+        }
+        if (finding.morphology?.shape) {
+          parts.push(`形状${finding.morphology.shape}`)
+        }
+        if (finding.morphology?.boundary) {
+          parts.push(`边界${finding.morphology.boundary}`)
+        }
+        if (finding.morphology?.echo) {
+          parts.push(`回声${finding.morphology.echo}`)
+        }
+        if (finding.morphology?.orientation) {
+          parts.push(`方位${finding.morphology.orientation}`)
+        }
+        if (finding.birads) {
+          parts.push(`BI-RADS ${finding.birads}类`)
+        }
+        parts.push(`风险等级${finding.risk === 'High' ? '高' : finding.risk === 'Medium' ? '中' : '低'}`)
+        if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
+          parts.push('⚠️存在不一致')
+        }
+        
+        return parts.join('，')
+      })
+    } else {
+      // 使用LLM返回的摘要
+      if (Array.isArray(newFormat.overall_assessment?.summary)) {
+        detailedFacts = newFormat.overall_assessment.summary.filter((s: string) => s && s.trim())
+      } else if (llmSummary) {
+        detailedFacts = [llmSummary]
+      }
+    }
+
     const overallAssessment: OverallAssessment = {
-      summary: typeof newFormat.overall_assessment?.summary === 'string' 
-        ? newFormat.overall_assessment.summary 
-        : Array.isArray(newFormat.overall_assessment?.summary)
-        ? newFormat.overall_assessment.summary.join(' ')
-        : '',
-      facts: Array.isArray(newFormat.overall_assessment?.summary) 
-        ? newFormat.overall_assessment.summary 
-        : newFormat.overall_assessment?.facts || [],
+      summary: llmSummary || detailedFacts.join(' '),
+      facts: detailedFacts,
       suggestions: newFormat.overall_assessment?.suggestions || [],
       birads: newFormat.overall_assessment?.birads,
+      totalNodules,
+      highestRisk,
+      riskDistribution,
+      advice: newFormat.overall_assessment?.advice || '',
+      inconsistencyCount,
+      inconsistencySummary: inconsistencySummary.length > 0 ? inconsistencySummary : undefined,
     }
 
     return { findings, overallAssessment }
@@ -156,17 +221,80 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       }
     })
 
+    // 计算风险评估信息
+    const totalNodules = findings.length
+    const riskLevels = findings.map(f => f.risk)
+    const highestRisk = riskLevels.includes('High') ? 'High' : riskLevels.includes('Medium') ? 'Medium' : 'Low'
+    const riskDistribution = {
+      Low: riskLevels.filter(r => r === 'Low').length,
+      Medium: riskLevels.filter(r => r === 'Medium').length,
+      High: riskLevels.filter(r => r === 'High').length,
+    }
+    const inconsistencyCount = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0).length
+    const inconsistencySummary = findings
+      .filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
+      .map(f => `${f.name}：${f.inconsistencyAlerts.join('；')}`)
+
+    // 生成详细事实摘要
+    const llmSummary = typeof aiResult.overall_assessment?.summary === 'string' 
+      ? aiResult.overall_assessment.summary 
+      : Array.isArray(aiResult.overall_assessment?.summary)
+      ? aiResult.overall_assessment.summary.join(' ')
+      : ''
+    
+    const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
+    const summaryIsInsufficient = llmSummary.length < totalNodules * 50
+
+    let detailedFacts: string[] = []
+    if (summaryIsEmpty || summaryIsInsufficient) {
+      detailedFacts = findings.map((finding, index) => {
+        const parts: string[] = []
+        parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
+        
+        if (finding.size) {
+          parts.push(`大小${finding.size.length}×${finding.size.width}×${finding.size.depth}cm`)
+        }
+        if (finding.morphology?.shape) {
+          parts.push(`形状${finding.morphology.shape}`)
+        }
+        if (finding.morphology?.boundary) {
+          parts.push(`边界${finding.morphology.boundary}`)
+        }
+        if (finding.morphology?.echo) {
+          parts.push(`回声${finding.morphology.echo}`)
+        }
+        if (finding.morphology?.orientation) {
+          parts.push(`方位${finding.morphology.orientation}`)
+        }
+        if (finding.birads) {
+          parts.push(`BI-RADS ${finding.birads}类`)
+        }
+        parts.push(`风险等级${finding.risk === 'High' ? '高' : finding.risk === 'Medium' ? '中' : '低'}`)
+        if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
+          parts.push('⚠️存在不一致')
+        }
+        
+        return parts.join('，')
+      })
+    } else {
+      if (Array.isArray(aiResult.overall_assessment?.summary)) {
+        detailedFacts = aiResult.overall_assessment.summary.filter((s: string) => s && s.trim())
+      } else if (llmSummary) {
+        detailedFacts = [llmSummary]
+      }
+    }
+
     const overallAssessment: OverallAssessment = {
-      summary: typeof aiResult.overall_assessment?.summary === 'string' 
-        ? aiResult.overall_assessment.summary 
-        : Array.isArray(aiResult.overall_assessment?.summary)
-        ? aiResult.overall_assessment.summary.join(' ')
-        : '',
-      facts: Array.isArray(aiResult.overall_assessment?.summary) 
-        ? aiResult.overall_assessment.summary 
-        : aiResult.overall_assessment?.facts || [],
+      summary: llmSummary || detailedFacts.join(' '),
+      facts: detailedFacts,
       suggestions: aiResult.overall_assessment?.suggestions || [],
       birads: aiResult.overall_assessment?.birads,
+      totalNodules,
+      highestRisk,
+      riskDistribution,
+      advice: aiResult.advice || '',
+      inconsistencyCount,
+      inconsistencySummary: inconsistencySummary.length > 0 ? inconsistencySummary : undefined,
     }
 
     return { findings, overallAssessment }

@@ -143,26 +143,32 @@ function App() {
           {/* 异常发现和整体评估 */}
           {analysisResult && (
             <div className="space-y-6">
-              {/* 胸部示意图 */}
+              {/* 中间：结节列表（左侧）和胸部示意图（右侧） */}
               {analysisResult.findings.length > 0 && (
-                <BreastDiagram
-                  findings={analysisResult.findings}
-                  selectedId={selectedFindingId}
-                  onSelect={setSelectedFindingId}
-                />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* 异常发现列表 - 左侧，3列 */}
+                  <div className="lg:col-span-3">
+                    <AbnormalFindings
+                      findings={analysisResult.findings}
+                      selectedId={selectedFindingId}
+                      onSelect={setSelectedFindingId}
+                    />
+                  </div>
+                  {/* 胸部示意图 - 右侧，9列 */}
+                  <div className="lg:col-span-9">
+                    <BreastDiagram
+                      findings={analysisResult.findings}
+                      selectedId={selectedFindingId}
+                      onSelect={setSelectedFindingId}
+                    />
+                  </div>
+                </div>
               )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* 异常发现列表 - 响应式：移动端全宽，桌面端3列 */}
-                <div className="lg:col-span-3">
-                  <AbnormalFindings
-                    findings={analysisResult.findings}
-                    selectedId={selectedFindingId}
-                    onSelect={setSelectedFindingId}
-                  />
-                </div>
-                {/* 异常发现详情 - 响应式：移动端全宽，桌面端9列 */}
-                <div className="lg:col-span-9">
+              {/* 底部：两个大卡片并列 */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* 左侧卡片：乳腺结节详情 */}
+                <div>
                   <AbnormalFindings
                     findings={analysisResult.findings}
                     selectedId={selectedFindingId}
@@ -170,10 +176,10 @@ function App() {
                     showDetails={true}
                   />
                 </div>
-              </div>
-              {/* 整体评估 - 全宽 */}
-              <div>
-                <OverallAssessment assessment={analysisResult.overallAssessment} />
+                {/* 右侧卡片：整体评估 */}
+                <div>
+                  <OverallAssessment assessment={analysisResult.overallAssessment} />
+                </div>
               </div>
             </div>
           )}

@@ -30,6 +30,16 @@ export interface OverallAssessment {
   facts: string[]
   suggestions: string[]
   birads?: string
+  totalNodules?: number
+  highestRisk?: 'Low' | 'Medium' | 'High'
+  riskDistribution?: {
+    Low: number
+    Medium: number
+    High: number
+  }
+  advice?: string
+  inconsistencyCount?: number
+  inconsistencySummary?: string[]
 }
 
 export interface AnalysisResult {

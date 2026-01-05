@@ -129,10 +129,10 @@ export default function AbnormalFindings({
               <button
                 key={finding.id}
                 onClick={() => onSelect(finding.id)}
-                className={`w-full text-left p-4 rounded-xl transition-all ${
+                className={`w-full text-left p-4 rounded-[20px] transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-white hover:bg-gray-50 border border-gray-200'
+                    ? 'bg-blue-500 text-white border-2 border-blue-600 font-bold shadow-lg'
+                    : 'bg-gray-50 hover:bg-gray-100 border border-gray-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -140,13 +140,13 @@ export default function AbnormalFindings({
                     <p className={`font-semibold ${isSelected ? 'text-white' : 'text-gray-800'}`}>
                       {finding.name}
                     </p>
-                    <p className={`text-sm mt-1 ${isSelected ? 'text-purple-100' : 'text-gray-600'}`}>
+                    <p className={`text-sm mt-1 ${isSelected ? 'text-blue-100' : 'text-gray-600'}`}>
                       {finding.location.breast === 'left' ? '左' : '右'}乳 {finding.location.clockPosition}
                     </p>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
                     isSelected
-                      ? 'bg-white text-purple-600'
+                      ? 'bg-white text-blue-600'
                       : riskColor === 'red'
                       ? 'bg-red-100 text-red-700'
                       : riskColor === 'yellow'
