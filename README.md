@@ -117,8 +117,10 @@ export DEEPSEEK_API_KEY="sk-your-api-key-here"
 **方式一：使用测试脚本（推荐，v1.3.0）**
 
 ```bash
-# 一键启动后端和前端
-./test_local.sh
+# 一键启动后端和前端（本地测试）
+./scripts/test_local.sh
+# 或使用端到端测试脚本
+./scripts/test_e2e.sh
 ```
 
 **方式二：使用启动脚本**

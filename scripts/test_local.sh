@@ -11,6 +11,13 @@ python3 --version || { echo "❌ Python未安装"; exit 1; }
 node --version || { echo "❌ Node.js未安装"; exit 1; }
 npm --version || { echo "❌ npm未安装"; exit 1; }
 
+# 获取脚本所在目录和项目根目录
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# 切换到项目根目录
+cd "$PROJECT_ROOT" || { echo "❌ 无法切换到项目根目录"; exit 1; }
+
 # 检查是否在项目根目录
 if [ ! -f "pyproject.toml" ] || [ ! -d "frontend" ]; then
     echo "❌ 错误: 请在项目根目录运行此脚本"
@@ -33,7 +40,7 @@ fi
 # 启动后端（后台运行）
 echo ""
 echo "🔧 启动后端API..."
-./scripts/start_api.sh > /tmp/medcrux_backend.log 2>&1 &
+"$SCRIPT_DIR/start_api.sh" > /tmp/medcrux_backend.log 2>&1 &
 BACKEND_PID=$!
 
 # 等待后端启动
@@ -80,6 +87,10 @@ echo ""
 echo "📝 日志文件:"
 echo "   - 后端日志: /tmp/medcrux_backend.log"
 echo "   - 前端日志: /tmp/medcrux_frontend.log"
+echo ""
+echo "📖 测试指南:"
+echo "   - 完整测试: 查看 docs/dev/versions/v1.3.0/LOCAL_TESTING.md"
+echo "   - 测试清单: 查看 docs/dev/versions/v1.3.0/TEST_CHECKLIST.md"
 echo ""
 echo "⚠️  按Ctrl+C停止所有服务"
 echo ""

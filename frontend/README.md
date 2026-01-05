@@ -9,7 +9,7 @@
 在项目根目录运行：
 
 ```bash
-./test_local.sh
+./scripts/test_local.sh
 ```
 
 这会自动：
