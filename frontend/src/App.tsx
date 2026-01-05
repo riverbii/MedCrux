@@ -90,8 +90,8 @@ function App() {
       setAnalysisProgress(100)
 
       // 自动选择第一个异常发现
-      if (result.findings.length > 0) {
-        setSelectedFindingId(result.findings[0].id)
+      if (response.result.findings.length > 0) {
+        setSelectedFindingId(response.result.findings[0].id)
       }
     } catch (error) {
       console.error('分析失败:', error)

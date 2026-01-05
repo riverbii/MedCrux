@@ -1,6 +1,13 @@
 #!/bin/bash
 # 启动MedCrux API服务（使用uv运行）
 
+# 获取脚本所在目录和项目根目录
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# 切换到项目根目录
+cd "$PROJECT_ROOT" || { echo "❌ 无法切换到项目根目录"; exit 1; }
+
 echo "🚀 启动MedCrux API服务（使用uv）..."
 echo ""
 

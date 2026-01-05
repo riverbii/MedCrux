@@ -59,7 +59,19 @@ export interface AnalysisResponse {
 
 // 转换后端响应为前端格式
 function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
-  const aiResult = response.ai_result
+  const aiResult = response.ai_result || {}
+
+  // 处理错误情况
+  if (aiResult.ai_risk_assessment === 'Error' || aiResult.error) {
+    return {
+      findings: [],
+      overallAssessment: {
+        summary: aiResult.advice || 'AI分析失败，请稍后重试。',
+        facts: [],
+        suggestions: [],
+      },
+    }
+  }
 
   // 优先使用新格式
   if (aiResult._new_format) {
@@ -160,13 +172,16 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
     return { findings, overallAssessment }
   }
 
-  // 无异常发现
+  // 无异常发现或格式不匹配
   return {
     findings: [],
     overallAssessment: {
-      summary: aiResult.overall_assessment?.summary || '未发现异常',
-      facts: [],
-      suggestions: [],
+      summary: aiResult.overall_assessment?.summary || aiResult.advice || '未发现异常',
+      facts: Array.isArray(aiResult.overall_assessment?.summary) 
+        ? aiResult.overall_assessment.summary 
+        : aiResult.overall_assessment?.facts || [],
+      suggestions: aiResult.overall_assessment?.suggestions || [],
+      birads: aiResult.overall_assessment?.birads || aiResult.birads_class,
     },
   }
 }
@@ -180,15 +195,31 @@ export const analyzeReport = async (file: File): Promise<AnalyzeReportResponse> 
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await api.post<AnalysisResponse>('/analyze/upload', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  try {
+    const response = await api.post<AnalysisResponse>('/analyze/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
 
-  return {
-    result: convertToAnalysisResult(response.data),
-    ocrText: response.data.ocr_text || '',
+    return {
+      result: convertToAnalysisResult(response.data),
+      ocrText: response.data.ocr_text || '',
+    }
+  } catch (error: any) {
+    console.error('API调用失败:', error)
+    // 返回错误结果
+    return {
+      result: {
+        findings: [],
+        overallAssessment: {
+          summary: error.response?.data?.detail || error.message || '分析失败，请重试',
+          facts: [],
+          suggestions: [],
+        },
+      },
+      ocrText: '',
+    }
   }
 }
 
