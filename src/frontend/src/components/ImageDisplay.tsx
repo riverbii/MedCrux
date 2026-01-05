@@ -3,53 +3,60 @@ import { useState } from 'react'
 interface ImageDisplayProps {
   imageUrl: string | null
   ocrText?: string
+  onRemove?: () => void
 }
 
-export default function ImageDisplay({ imageUrl, ocrText }: ImageDisplayProps) {
+export default function ImageDisplay({ imageUrl, ocrText, onRemove }: ImageDisplayProps) {
   const [showOcrText, setShowOcrText] = useState(false)
 
   if (!imageUrl) return null
 
   return (
-    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6 animate-fade-in-up">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {/* 原始图像 */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">原始图像</h3>
-          <div className="bg-gray-100 rounded-lg p-2 md:p-4 flex items-center justify-center min-h-[200px] md:min-h-[300px]">
-            <img
-              src={imageUrl}
-              alt="医学报告"
-              className="max-w-full max-h-[300px] md:max-h-[500px] object-contain rounded-lg"
-            />
-          </div>
-        </div>
-
-        {/* OCR原文 */}
-        <div>
+    <div className="relative group">
+      {/* 图片预览区域 */}
+      <div className="relative rounded-2xl overflow-hidden bg-gray-900 min-h-[400px] flex items-center justify-center">
+        <img
+          src={imageUrl}
+          alt="预览图像"
+          className="w-full h-full object-contain"
+        />
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="absolute top-4 right-4 bg-white/90 hover:bg-white px-3 py-2 rounded-lg shadow-lg text-sm font-medium text-gray-700 transition-all"
+          >
+            ✕ 移除
+          </button>
+        )}
+        
+        {/* OCR展开按钮 - 悬浮显示（分析后显示） */}
+        {ocrText && (
+          <button
+            onClick={() => setShowOcrText(!showOcrText)}
+            className="absolute bottom-4 right-4 bg-white/90 hover:bg-white px-4 py-2 rounded-xl shadow-lg text-sm font-medium text-gray-700 transition-all"
+          >
+            📄 查看OCR原文
+          </button>
+        )}
+      </div>
+      
+      {/* OCR原文展示区域（可展开/收起） */}
+      {ocrText && showOcrText && (
+        <div className="mt-4 glass rounded-2xl shadow-elegant p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">OCR原文</h3>
+            <h4 className="text-sm font-semibold text-gray-800">OCR识别原文</h4>
             <button
-              onClick={() => setShowOcrText(!showOcrText)}
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              onClick={() => setShowOcrText(false)}
+              className="text-xs text-gray-500 hover:text-gray-700"
             >
-              {showOcrText ? '收起' : '展开'}
+              收起
             </button>
           </div>
-          {showOcrText && ocrText && (
-            <div className="bg-gray-50 rounded-lg p-4 max-h-[500px] overflow-y-auto">
-              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-                {ocrText}
-              </pre>
-            </div>
-          )}
-          {!ocrText && (
-            <div className="bg-gray-50 rounded-lg p-4 text-center text-gray-500">
-              暂无OCR文本
-            </div>
-          )}
+          <div className="bg-gray-50 rounded-xl p-4 max-h-64 overflow-y-auto">
+            <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap">{ocrText}</pre>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

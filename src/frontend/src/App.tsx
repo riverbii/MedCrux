@@ -106,69 +106,102 @@ function App() {
     <div className="min-h-screen flex flex-col">
       <Disclaimer />
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-4 md:py-8 max-w-7xl">
-        <div className="space-y-6">
-          {/* 文件上传区域 */}
-          <FileUpload
-            onFileSelect={setUploadedFile}
-            uploadedFile={uploadedFile}
-          />
+      <main className="flex-1 pt-24 pb-12">
+        <div className="container mx-auto px-8">
+          {/* 顶部区域：图像和分析 - 按照layout v2原型 */}
+          <div className="mb-8 animate-fade-in-up">
+            <div className="glass rounded-3xl shadow-elegant p-8">
+              <div className="grid grid-cols-12 gap-6">
+                {/* 左侧：图像展示区 - 占据7列 */}
+                <div className="col-span-12 lg:col-span-7">
+                  {imageUrl ? (
+                    <ImageDisplay
+                      imageUrl={imageUrl}
+                      ocrText={ocrText}
+                      onRemove={() => {
+                        setUploadedFile(null)
+                        setImageUrl(null)
+                        setOcrText('')
+                        setAnalysisResult(null)
+                        setSelectedFindingId(null)
+                      }}
+                    />
+                  ) : (
+                    <FileUpload
+                      onFileSelect={setUploadedFile}
+                      uploadedFile={uploadedFile}
+                    />
+                  )}
+                </div>
+                
+                {/* 右侧：分析控制区 - 占据5列 */}
+                <div className="col-span-12 lg:col-span-5 flex flex-col justify-between">
+                  {/* 分析状态区域 */}
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">分析状态</h3>
+                      <AnalysisStatus
+                        status={analysisStatus}
+                        progress={analysisProgress}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* 分析按钮 */}
+                  <div>
+                    <button
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing || !uploadedFile}
+                      className="analyze-btn w-full py-5 px-6 rounded-2xl text-white font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="flex items-center justify-center space-x-2">
+                        <span>{isAnalyzing ? '⏳' : '🚀'}</span>
+                        <span>{isAnalyzing ? '分析中...' : '开始智能分析'}</span>
+                      </span>
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-3">预计耗时 15-20 秒</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          {/* 图像和OCR显示 */}
-          {imageUrl && (
-            <ImageDisplay imageUrl={imageUrl} ocrText={ocrText} />
-          )}
-
-          {/* 分析按钮 */}
-          {uploadedFile && !analysisResult && (
-            <div className="flex justify-center">
-              <button
-                onClick={handleAnalyze}
-                disabled={isAnalyzing}
-                className="analyze-btn px-8 py-4 text-white font-semibold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAnalyzing ? '分析中...' : '开始分析 🚀'}
-              </button>
+          {/* 中间区域：胸部示意图 - 全宽展示（按照layout v2原型） */}
+          {analysisResult && analysisResult.findings.length > 0 && (
+            <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <div className="glass rounded-3xl shadow-elegant p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">异常发现可视化分析</h2>
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <span>发现</span>
+                    <span className="font-bold text-gray-800">{analysisResult.findings.length}</span>
+                    <span>个异常发现</span>
+                  </div>
+                </div>
+                <BreastDiagram
+                  findings={analysisResult.findings}
+                  selectedId={selectedFindingId}
+                  onSelect={setSelectedFindingId}
+                />
+              </div>
             </div>
           )}
 
-          {/* 分析状态 */}
-          {analysisStatus !== 'idle' && analysisStatus !== 'error' && (
-            <AnalysisStatus
-              status={analysisStatus}
-              progress={analysisProgress}
-            />
-          )}
-
-          {/* 异常发现和整体评估 */}
+          {/* 中间区域：异常发现列表和详情 - 左右分栏布局（按照layout v2原型） */}
           {analysisResult && (
-            <div className="space-y-6">
-              {/* 中间：结节列表（左侧）和胸部示意图（右侧） */}
-              {analysisResult.findings.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* 异常发现列表 - 左侧，3列 */}
-                  <div className="lg:col-span-3">
-                    <AbnormalFindings
-                      findings={analysisResult.findings}
-                      selectedId={selectedFindingId}
-                      onSelect={setSelectedFindingId}
-                    />
-                  </div>
-                  {/* 胸部示意图 - 右侧，9列 */}
-                  <div className="lg:col-span-9">
-                    <BreastDiagram
-                      findings={analysisResult.findings}
-                      selectedId={selectedFindingId}
-                      onSelect={setSelectedFindingId}
-                    />
-                  </div>
+            <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+              <div className="grid grid-cols-12 gap-6 items-stretch">
+                {/* 左侧：异常发现列表 - 3列 */}
+                <div className="col-span-12 lg:col-span-3 flex">
+                  <AbnormalFindings
+                    findings={analysisResult.findings}
+                    selectedId={selectedFindingId}
+                    onSelect={setSelectedFindingId}
+                  />
                 </div>
-              )}
-
-              {/* 底部：两个大卡片并列 */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 左侧卡片：乳腺结节详情 */}
-                <div>
+                
+                {/* 右侧：异常发现详情 - 9列 */}
+                <div className="col-span-12 lg:col-span-9 flex">
                   <AbnormalFindings
                     findings={analysisResult.findings}
                     selectedId={selectedFindingId}
@@ -176,11 +209,14 @@ function App() {
                     showDetails={true}
                   />
                 </div>
-                {/* 右侧卡片：整体评估 */}
-                <div>
-                  <OverallAssessment assessment={analysisResult.overallAssessment} />
-                </div>
               </div>
+            </div>
+          )}
+
+          {/* 底部区域：整体评估 - 独立展示（按照layout v2原型） */}
+          {analysisResult && (
+            <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <OverallAssessment assessment={analysisResult.overallAssessment} />
             </div>
           )}
         </div>

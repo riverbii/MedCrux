@@ -5,85 +5,85 @@ interface AnalysisStatusProps {
   progress: number
 }
 
-const statusConfig: Record<StatusType, { label: string; color: string }> = {
-  idle: { label: '待开始', color: 'gray' },
-  uploading: { label: '上传中', color: 'blue' },
-  ocr: { label: 'OCR识别中', color: 'blue' },
-  rag: { label: 'RAG检索中', color: 'purple' },
-  llm: { label: '大模型分析中', color: 'purple' },
-  consistency: { label: '一致性检查中', color: 'yellow' },
-  completed: { label: '分析完成', color: 'green' },
-  error: { label: '分析失败', color: 'red' },
-}
-
-const stages: StatusType[] = ['uploading', 'ocr', 'rag', 'llm', 'consistency', 'completed']
+// 按照layout v2原型的6个阶段
+const stages = [
+  { id: 'ready', label: '准备就绪', statusKey: 'idle' as StatusType },
+  { id: 'ocr', label: 'OCR识别中...', statusKey: 'ocr' as StatusType },
+  { id: 'rag', label: '知识库检索中...', statusKey: 'rag' as StatusType },
+  { id: 'llm', label: '大模型分析中...', statusKey: 'llm' as StatusType },
+  { id: 'check', label: '一致性检查中...', statusKey: 'consistency' as StatusType },
+  { id: 'complete', label: '分析完成', statusKey: 'completed' as StatusType },
+]
 
 export default function AnalysisStatus({ status, progress }: AnalysisStatusProps) {
-  const currentStageIndex = stages.indexOf(status)
-  const config = statusConfig[status]
+  // 确定当前阶段
+  const getCurrentStageIndex = () => {
+    if (status === 'idle') return 0
+    if (status === 'ocr') return 1
+    if (status === 'rag') return 2
+    if (status === 'llm') return 3
+    if (status === 'consistency') return 4
+    if (status === 'completed') return 5
+    return 0
+  }
+
+  const currentStageIndex = getCurrentStageIndex()
 
   return (
-    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6 animate-fade-in-up">
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <h3 className="text-base md:text-lg font-semibold text-gray-800">分析状态</h3>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            config.color === 'blue' ? 'bg-blue-100 text-blue-700' :
-            config.color === 'purple' ? 'bg-purple-100 text-purple-700' :
-            config.color === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
-            config.color === 'green' ? 'bg-green-100 text-green-700' :
-            config.color === 'red' ? 'bg-red-100 text-red-700' :
-            'bg-gray-100 text-gray-700'
-          }`}>
-            {config.label}
-          </span>
-        </div>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        {stages.map((stage, index) => {
+          const isActive = index === currentStageIndex
+          const isCompleted = index < currentStageIndex
+          const isPending = index > currentStageIndex
 
-        {/* 进度条 */}
-        <div className="space-y-2">
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          return (
             <div
-              className={`h-full transition-all duration-300 ${
-                config.color === 'blue' ? 'bg-blue-500' :
-                config.color === 'purple' ? 'bg-purple-500' :
-                config.color === 'yellow' ? 'bg-yellow-500' :
-                config.color === 'green' ? 'bg-green-500' :
-                config.color === 'red' ? 'bg-red-500' :
-                'bg-gray-500'
+              key={stage.id}
+              className={`flex items-center space-x-3 p-3 rounded-xl border ${
+                isActive
+                  ? 'bg-indigo-50 border-indigo-200'
+                  : isCompleted
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-gray-50 border-gray-200 opacity-50'
               }`}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-sm text-gray-600 text-right">{progress}%</p>
-        </div>
-
-        {/* 阶段列表 - 响应式：移动端单列，桌面端5列 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
-          {stages.map((stage, index) => {
-            const stageConfig = statusConfig[stage]
-            const isActive = index === currentStageIndex
-            const isCompleted = index < currentStageIndex
-            const isPending = index > currentStageIndex
-
-            return (
+            >
               <div
-                key={stage}
-                className={`text-center p-2 rounded-lg ${
-                  isActive ? 'bg-purple-100 text-purple-700 font-semibold' :
-                  isCompleted ? 'bg-green-100 text-green-700' :
-                  'bg-gray-100 text-gray-400'
+                className={`w-2 h-2 rounded-full ${
+                  isActive
+                    ? 'bg-indigo-500 animate-pulse'
+                    : isCompleted
+                    ? 'bg-green-500'
+                    : 'bg-gray-300'
+                }`}
+              />
+              <span
+                className={`text-sm ${
+                  isActive
+                    ? 'text-gray-700'
+                    : isCompleted
+                    ? 'text-gray-700'
+                    : 'text-gray-500'
                 }`}
               >
-                <div className="text-xs font-medium">{stageConfig.label}</div>
-                {isCompleted && (
-                  <svg className="w-4 h-4 mx-auto mt-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </div>
-            )
-          })}
+                {stage.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+      
+      {/* 进度条 */}
+      <div className="mt-4">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
         </div>
+        <p className="text-xs text-gray-500 text-center mt-2">
+          {status === 'idle' ? '等待开始分析...' : stages[currentStageIndex]?.label || `${progress}%`}
+        </p>
       </div>
     </div>
   )

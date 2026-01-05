@@ -15,12 +15,46 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
   const riskColor = riskColors[highestRisk]
 
   return (
-    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6">
-      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">整体评估</h3>
+    <div className="detail-card rounded-3xl shadow-elegant p-8 card-hover">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-gray-800">整体评估</h3>
+        {assessment.highestRisk && (
+          <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+            assessment.highestRisk === 'High' ? 'bg-red-100 text-red-700' :
+            assessment.highestRisk === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+            'bg-green-100 text-green-700'
+          }`}>
+            可疑程度：{assessment.highestRisk === 'High' ? '高' : assessment.highestRisk === 'Medium' ? '中' : '低'}
+          </div>
+        )}
+      </div>
       <div className="space-y-6">
+        {/* 可疑程度评估 */}
+        {assessment.highestRisk && (
+          <div>
+            <div className="text-sm font-semibold text-gray-600 mb-3">可疑程度评估</div>
+            <div className={`rounded-xl p-6 text-white ${
+              assessment.highestRisk === 'High' ? 'bg-gradient-to-r from-red-500 to-red-600' :
+              assessment.highestRisk === 'Medium' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' :
+              'bg-gradient-to-r from-green-500 to-green-600'
+            }`}>
+              <div className="text-3xl font-bold mb-2">可疑程度：{assessment.highestRisk === 'High' ? '高' : assessment.highestRisk === 'Medium' ? '中' : '低'}</div>
+              {assessment.totalNodules && (
+                <div className="text-sm opacity-90">
+                  发现{assessment.totalNodules}个异常发现，最高可疑程度为{assessment.highestRisk === 'High' ? '高' : assessment.highestRisk === 'Medium' ? '中' : '低'}
+                  {assessment.highestRisk === 'High' && '（BI-RADS 4类，恶性可能性2%-95%）'}
+                  {assessment.highestRisk === 'Medium' && '（BI-RADS 3类，可能良性）'}
+                  {assessment.highestRisk === 'Low' && '（BI-RADS 1-2类，良性）'}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         {/* 整体风险评估 */}
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-3">📊 整体风险评估</h4>
+        {assessment.totalNodules && (
+          <div>
+            <h4 className="font-semibold text-gray-700 mb-3">📊 整体风险评估</h4>
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-gray-700">结节总数：</span>
@@ -77,7 +111,7 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
         {/* 事实摘要 */}
         {assessment.facts && assessment.facts.length > 0 && (
           <div>
-            <h4 className="font-semibold text-gray-700 mb-3">📋 事实摘要</h4>
+            <div className="text-sm font-semibold text-gray-600 mb-3">事实摘要</div>
             <ul className="bg-gray-50 rounded-lg p-4 space-y-2">
               {assessment.facts.map((fact, index) => (
                 <li key={index} className="text-gray-700 text-sm flex items-start">
@@ -92,7 +126,7 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
         {/* 综合建议 */}
         {(assessment.advice || (assessment.suggestions && assessment.suggestions.length > 0)) && (
           <div>
-            <h4 className="font-semibold text-gray-700 mb-3">💡 MedCrux 建议</h4>
+            <div className="text-sm font-semibold text-gray-600 mb-3">综合建议</div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               {assessment.advice ? (
                 <p className="text-blue-800">{assessment.advice}</p>
