@@ -39,3 +39,4 @@ export interface AnalysisResult {
 
 export type AnalysisStatus = 'idle' | 'uploading' | 'ocr' | 'rag' | 'llm' | 'consistency' | 'completed' | 'error'
 
+

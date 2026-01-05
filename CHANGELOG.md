@@ -7,6 +7,31 @@
 
 ---
 
+## [1.3.0] - 2026-01-05
+
+### Added
+- 前端框架升级：从Streamlit迁移到React + TypeScript + Tailwind CSS
+- Logo设计：MedCrux专属Logo（瞄准镜主题）
+- 患者教育功能：BI-RADS分级说明（通过导航菜单访问）
+- 分析状态细化：显示6个分析阶段（准备、OCR、RAG、LLM、一致性检查、完成）
+- 异常发现可视化：胸部示意图（基于钟点位置和距乳头距离）
+- 导航菜单：智能分析和科普教育下拉菜单
+- 页脚信息：版权、License、Privacy Policy、GitHub Issues链接
+- 响应式布局：完整的移动端适配
+- 组件懒加载：模态框组件按需加载
+
+### Changed
+- UI设计：全新的现代化专业界面
+- 后端API：添加CORS配置，版本升级到1.3.0
+- 性能优化：组件懒加载、代码分割
+
+### Technical
+- 前端技术栈：React 18.2.0, TypeScript 5.2.2, Tailwind CSS 3.4.0, Vite 5.0.0
+- 构建工具：从Streamlit切换到Vite
+- 开发工具：ESLint、TypeScript严格模式
+
+---
+
 ## [1.2.0] - 2026-01-04
 
 ### Changed

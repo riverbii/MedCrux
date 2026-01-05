@@ -43,3 +43,4 @@ export default function Logo({ size = 'medium', variant = 'compact' }: LogoProps
   )
 }
 
+
