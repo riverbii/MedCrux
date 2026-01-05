@@ -216,3 +216,8 @@ docs/gov/
 
 # Source data
 source_data/
+
+# Python build artifacts
+*.egg-info/
+build/
+dist/

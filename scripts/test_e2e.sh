@@ -24,7 +24,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || { echo "❌ 无法切换到项目根目录"; exit 1; }
 
 # 检查是否在项目根目录
-if [ ! -f "pyproject.toml" ] || [ ! -d "src/frontend" ]; then
+if [ ! -f "pyproject.toml" ] || [ ! -d "frontend" ]; then
     echo "❌ 错误: 请在项目根目录运行此脚本"
     exit 1
 fi
@@ -43,11 +43,11 @@ if [ ! -f "uv.lock" ] || [ ! -d ".venv" ]; then
 fi
 
 # 检查前端依赖
-if [ ! -d "src/frontend/node_modules" ]; then
+if [ ! -d "frontend/node_modules" ]; then
     echo "⚠️  警告: 前端依赖未安装，正在安装..."
-    cd src/frontend
+    cd frontend
     npm install
-    cd ../..
+    cd ..
 fi
 
 # 启动后端（后台运行）
@@ -75,10 +75,10 @@ done
 # 启动前端
 echo ""
 echo "🌐 启动前端..."
-cd src/frontend
+cd frontend
 npm run dev > /tmp/medcrux_frontend.log 2>&1 &
 FRONTEND_PID=$!
-cd ../..
+cd ..
 
 # 等待前端启动
 echo "⏳ 等待前端启动..."
