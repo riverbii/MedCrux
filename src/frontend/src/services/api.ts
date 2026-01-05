@@ -98,7 +98,7 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
         location: {
           breast: (nodule.location?.breast === 'right' ? 'right' : 'left') as 'left' | 'right',
           clockPosition: nodule.location?.clock_position || nodule.location?.clockPosition || '12点',
-          distanceFromNipple: nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple,
+          distanceFromNipple: parseDistanceFromNipple(nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple),
         },
         size: sizeObj || nodule.size,
         morphology: nodule.morphology,
@@ -212,7 +212,7 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
         location: {
           breast: (nodule.location?.breast === 'right' ? 'right' : 'left') as 'left' | 'right',
           clockPosition: nodule.location?.clock_position || nodule.location?.clockPosition || '12点',
-          distanceFromNipple: nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple,
+          distanceFromNipple: parseDistanceFromNipple(nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple),
         },
         size: sizeObj || nodule.size,
         morphology: nodule.morphology,
