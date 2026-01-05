@@ -6,6 +6,30 @@ const api = axios.create({
   timeout: 300000, // 5分钟超时，因为分析可能需要较长时间
 })
 
+// 解析距离数据（可能是数字或字符串，如"3cm"或"3"）
+function parseDistanceFromNipple(distance: any): number | undefined {
+  if (distance === undefined || distance === null) {
+    return undefined
+  }
+  
+  // 如果是数字，直接返回
+  if (typeof distance === 'number') {
+    return distance > 0 ? distance : undefined
+  }
+  
+  // 如果是字符串，尝试解析
+  if (typeof distance === 'string') {
+    // 移除"cm"等单位，提取数字
+    const match = distance.match(/([\d.]+)/)
+    if (match) {
+      const num = parseFloat(match[1])
+      return num > 0 ? num : undefined
+    }
+  }
+  
+  return undefined
+}
+
 export interface HealthResponse {
   status: string
   version: string
