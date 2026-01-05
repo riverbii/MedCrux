@@ -9,28 +9,27 @@ interface BreastDiagramProps {
 export default function BreastDiagram({ findings, selectedId, onSelect }: BreastDiagramProps) {
   // 计算钟点位置的角度（按照layout v2原型和医学标准）
   // SVG坐标系：Y轴向下，角度从右侧(3点)开始为0度，逆时针增加
-  // 3点 = 0度，6点 = 90度，9点 = 180度，12点 = 270度(或-90度)
+  // 根据原型验证：3点(180,105)→0度，9点(20,105)→180度，11点(70,60)→-127度
   const getClockPositionAngle = (clockPosition: string): number => {
     // 转换为SVG坐标系角度（从3点开始为0度，逆时针）
-    if (clockPosition.includes('12点')) return -90.0  // 或 270度
-    if (clockPosition.includes('1点')) return -60.0   // 或 300度
-    if (clockPosition.includes('2点')) return -30.0   // 或 330度
-    if (clockPosition.includes('3点')) return 0.0
-    if (clockPosition.includes('4点')) return 30.0
-    if (clockPosition.includes('5点')) return 60.0
-    if (clockPosition.includes('6点')) return 90.0
-    if (clockPosition.includes('7点')) return 120.0
-    if (clockPosition.includes('8点')) return 150.0
-    if (clockPosition.includes('9点')) return 180.0
-    if (clockPosition.includes('10点')) return -150.0  // 或 210度
-    if (clockPosition.includes('11点')) return -120.0  // 或 240度
+    if (clockPosition.includes('12点')) return -90.0  // 顶部
+    if (clockPosition.includes('1点')) return -60.0   // 右上方
+    if (clockPosition.includes('2点')) return -30.0   // 右上方
+    if (clockPosition.includes('3点')) return 0.0     // 右侧
+    if (clockPosition.includes('4点')) return 30.0    // 右下方
+    if (clockPosition.includes('5点')) return 60.0    // 右下方
+    if (clockPosition.includes('6点')) return 90.0    // 底部
+    if (clockPosition.includes('7点')) return 120.0   // 左下方
+    if (clockPosition.includes('8点')) return 150.0   // 左下方
+    if (clockPosition.includes('9点')) return 180.0   // 左侧
+    if (clockPosition.includes('10点')) return -150.0  // 左上方
+    if (clockPosition.includes('11点')) return -127.0  // 左上方（根据原型(70,60)计算：atan2(-40,-30)≈-127度）
     return -90.0 // 默认12点方向
   }
 
   // 计算钟点位置的坐标（按照layout v2原型）
   // 左右乳房钟点方向一致，不需要镜像
-  // 原型示例：左乳3点在(150,100)，右乳9点在(50,100)，右乳11点在(70,60)
-  // 验证：3点=0度→(150,100)，9点=180度→(50,100)，11点=-120度→(70,60)
+  // 必须使用真实的distanceFromNipple数据，不能使用默认值
   const getClockPositionCoords = (
     clockPosition: string,
     distanceFromNipple: number | undefined,
@@ -42,24 +41,20 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
     const angleDegrees = getClockPositionAngle(clockPosition)
     const angleRadians = (angleDegrees * Math.PI) / 180
     
-    // 计算半径（根据距离或使用默认值）
-    const actualBreastRadius = 7.5 // cm
-    let r = diagramRadius * 0.59 // 默认半径约50，对应原型中的3点(150,100)和9点(50,100)
+    // 计算半径：必须使用真实的distanceFromNipple数据
+    const actualBreastRadius = 7.5 // cm（实际乳腺半径）
     
-    if (distanceFromNipple && distanceFromNipple > 0) {
+    let r: number
+    if (distanceFromNipple !== undefined && distanceFromNipple !== null && distanceFromNipple > 0) {
+      // 使用真实距离数据计算半径
+      // 比例：实际距离 / 实际乳腺半径，限制在90%以内
       const ratio = Math.min(distanceFromNipple / actualBreastRadius, 0.9)
       r = diagramRadius * ratio
     } else {
-      // 根据钟点位置调整默认半径
-      // 11点钟位置在(70,60)，计算：dx=30, dy=40, r=sqrt(30^2+40^2)=50
-      // 但角度-120度，r=50时：x=100+50*cos(-120°)=100+50*(-0.5)=75, y=100+50*sin(-120°)=100+50*(-0.866)=56.7
-      // 实际需要r约35才能得到(70,60)
-      if (clockPosition.includes('11点') || clockPosition.includes('10点') || 
-          clockPosition.includes('1点') || clockPosition.includes('2点')) {
-        // 对于11点，需要调整半径使其更接近(70,60)
-        // 从(70,60)反推：角度-120度，需要r约35
-        r = diagramRadius * 0.41 // 约35
-      }
+      // 如果没有距离数据，使用默认值（但应该尽量避免这种情况）
+      // 默认使用中等距离（约45%半径）
+      r = diagramRadius * 0.45
+      console.warn(`警告：${breast === 'left' ? '左' : '右'}乳${clockPosition}缺少距离数据，使用默认值`)
     }
     
     // 计算坐标（SVG坐标系，Y轴向下）
