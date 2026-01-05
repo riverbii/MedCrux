@@ -1,13 +1,14 @@
 # RAG知识库数据
 
-> **位置**：`src/medcrux/rag/data/`
+> **位置**：`src/medcrux/rag/data/`  
 > **用途**：存储GraphRAG知识层和逻辑层数据
 
 ## 目录结构
 
 ```
 data/
-├── breast_ultrasound_report_axioms.md  # MD建立的公理系统（原始文件）
+├── breast_ultrasound_report_axioms.md  # 公理系统（最终版本）
+├── weak_evidence_chain.md              # 弱证据链知识库（最终版本）
 ├── knowledge_layer/                    # 知识层
 │   ├── entities/                      # 知识实体
 │   │   ├── axiom/                     # 公理实体
@@ -44,8 +45,8 @@ data/
 
 ## 数据来源
 
-1. **公理系统**：`breast_ultrasound_report_axioms.md`（MD建立）
-2. **医学指南**：`source_data/raw/*.pdf`（待处理，需要PDF解析库）
+1. **公理系统**：`breast_ultrasound_report_axioms.md`（基于ACR BI-RADS等权威标准）
+2. **弱证据链知识库**：`weak_evidence_chain.md`（未经充分验证的医学知识）
 
 ## 数据更新
 
@@ -57,8 +58,7 @@ python scripts/extract_rag_data.py
 
 脚本会从以下数据源提取知识：
 - `src/medcrux/rag/data/breast_ultrasound_report_axioms.md`（公理系统）
-- `source_data/raw/*.pdf`（医学指南PDF文件）
-- `source_data/raw/*.md`（其他Markdown文件）
+- `src/medcrux/rag/data/weak_evidence_chain.md`（弱证据链知识库）
 
 提取的数据会保存到`src/medcrux/rag/data/`目录（覆盖现有数据）。
 
@@ -78,6 +78,4 @@ from medcrux.rag.data_paths import (
 
 ---
 
-**版本**：v1.0
-**创建日期**：2026-01-03
-**最后更新**：2026-01-03 21:56:57
+**注意**：本文档为数据目录的说明文档。详细的版本历史和研发过程请参考开发文档。
