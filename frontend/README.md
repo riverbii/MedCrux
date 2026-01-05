@@ -4,13 +4,29 @@
 
 ## 快速开始
 
-### 安装依赖
+### 方式一：使用测试脚本（推荐）
+
+在项目根目录运行：
+
+```bash
+./test_local.sh
+```
+
+这会自动：
+- 检查环境
+- 安装依赖（如需要）
+- 启动后端API
+- 启动前端开发服务器
+
+### 方式二：手动启动
+
+#### 1. 安装依赖
 
 ```bash
 npm install
 ```
 
-### 开发模式
+#### 2. 开发模式
 
 ```bash
 npm run dev
@@ -18,13 +34,15 @@ npm run dev
 
 访问 http://localhost:3000
 
-### 构建生产版本
+**注意**：确保后端API已启动（`./scripts/start_api.sh`）
+
+#### 3. 构建生产版本
 
 ```bash
 npm run build
 ```
 
-### 预览生产版本
+#### 4. 预览生产版本
 
 ```bash
 npm run preview
