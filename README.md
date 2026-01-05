@@ -114,13 +114,23 @@ export DEEPSEEK_API_KEY="sk-your-api-key-here"
 
 #### 4. 启动服务
 
-**方式一：使用启动脚本（推荐）**
+**方式一：使用测试脚本（推荐，v1.3.0）**
+
+```bash
+# 一键启动后端和前端
+./test_local.sh
+```
+
+**方式二：使用启动脚本**
 
 ```bash
 # 终端1：启动API服务
 ./scripts/start_api.sh
 
-# 终端2：启动UI界面
+# 终端2：启动前端（v1.3.0）
+./scripts/start_frontend.sh
+
+# 或启动Streamlit UI（v1.2.0及之前）
 ./scripts/start_ui.sh
 ```
 
