@@ -25,11 +25,11 @@ fi
 if [ ! -f "uv.lock" ] || [ ! -d ".venv" ]; then
     echo "⚠️  警告: 依赖未同步，正在同步依赖..."
     uv sync
-else
-    # 确保包已安装（可编辑模式）
-    echo "📦 检查包安装状态..."
-    uv pip install -e . > /dev/null 2>&1 || uv sync
 fi
+
+# 确保包已安装（可编辑模式）
+echo "📦 安装/更新包（可编辑模式）..."
+uv pip install -e . 2>&1 | grep -v "already satisfied" || true
 
 # 检查环境变量
 if [ -z "$DEEPSEEK_API_KEY" ]; then

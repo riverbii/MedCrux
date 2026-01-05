@@ -7,7 +7,12 @@ echo ""
 
 # 检查环境
 echo "📋 检查环境..."
-python3 --version || { echo "❌ Python未安装"; exit 1; }
+if ! command -v uv &> /dev/null; then
+    echo "❌ 错误: uv未安装"
+    echo "   请先安装uv: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+uv --version || { echo "❌ uv未正确安装"; exit 1; }
 node --version || { echo "❌ Node.js未安装"; exit 1; }
 npm --version || { echo "❌ npm未安装"; exit 1; }
 
@@ -24,9 +29,10 @@ if [ ! -f "pyproject.toml" ] || [ ! -d "frontend" ]; then
     exit 1
 fi
 
-# 检查后端依赖
-if [ ! -d ".venv" ] && ! command -v uv &> /dev/null; then
-    echo "⚠️  警告: 未检测到虚拟环境，建议先运行 'uv sync' 或 'pip install -e .'"
+# 检查并同步后端依赖
+if [ ! -f "uv.lock" ] || [ ! -d ".venv" ]; then
+    echo "⚠️  警告: 依赖未同步，正在同步依赖..."
+    uv sync
 fi
 
 # 检查前端依赖

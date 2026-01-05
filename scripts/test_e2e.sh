@@ -7,7 +7,12 @@ echo ""
 
 # 检查环境
 echo "📋 检查环境..."
-python3 --version || { echo "❌ Python未安装"; exit 1; }
+if ! command -v uv &> /dev/null; then
+    echo "❌ 错误: uv未安装"
+    echo "   请先安装uv: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+uv --version || { echo "❌ uv未正确安装"; exit 1; }
 node --version || { echo "❌ Node.js未安装"; exit 1; }
 npm --version || { echo "❌ npm未安装"; exit 1; }
 
@@ -31,9 +36,10 @@ lsof -ti:8000 | xargs kill -9 2>/dev/null
 lsof -ti:3000 | xargs kill -9 2>/dev/null
 sleep 2
 
-# 检查后端依赖
-if [ ! -d ".venv" ] && ! command -v uv &> /dev/null; then
-    echo "⚠️  警告: 未检测到虚拟环境，建议先运行 'uv sync' 或 'pip install -e .'"
+# 检查并同步后端依赖
+if [ ! -f "uv.lock" ] || [ ! -d ".venv" ]; then
+    echo "⚠️  警告: 依赖未同步，正在同步依赖..."
+    uv sync
 fi
 
 # 检查前端依赖
@@ -55,7 +61,7 @@ echo "⏳ 等待后端启动..."
 for i in {1..15}; do
     if curl -s http://localhost:8000/health > /dev/null 2>&1; then
         echo "✅ 后端API启动成功 (PID: $BACKEND_PID)"
-        curl -s http://localhost:8000/health | python3 -m json.tool
+        curl -s http://localhost:8000/health | uv run python -m json.tool
         break
     fi
     if [ $i -eq 15 ]; then
