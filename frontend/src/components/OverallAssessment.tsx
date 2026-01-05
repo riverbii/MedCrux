@@ -6,8 +6,8 @@ interface OverallAssessmentProps {
 
 export default function OverallAssessment({ assessment }: OverallAssessmentProps) {
   return (
-    <div className="glass rounded-2xl shadow-elegant p-6">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">整体评估</h3>
+    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6">
+      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">整体评估</h3>
       <div className="space-y-6">
         {/* 摘要 */}
         <div>

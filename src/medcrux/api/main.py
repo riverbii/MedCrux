@@ -7,6 +7,7 @@ MedCrux API主模块
 """
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -17,7 +18,16 @@ from medcrux.utils.logger import log_error_with_context, setup_logger
 # 初始化logger
 logger = setup_logger("medcrux.api")
 
-app = FastAPI(title="MedCrux API", version="1.2.0")
+app = FastAPI(title="MedCrux API", version="1.3.0")
+
+# 配置CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class HealthResponse(BaseModel):
@@ -38,7 +48,7 @@ async def health_check():
     健康检查接口：用于监控系统确认服务是否存活
     """
     logger.info("健康检查请求")
-    return {"status": "operational", "version": "1.2.0"}
+    return {"status": "operational", "version": "1.3.0"}
 
 
 @app.post("/analyze/upload", response_model=AnalysisResponse)

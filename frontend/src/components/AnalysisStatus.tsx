@@ -23,10 +23,10 @@ export default function AnalysisStatus({ status, progress }: AnalysisStatusProps
   const config = statusConfig[status]
 
   return (
-    <div className="glass rounded-2xl shadow-elegant p-6 animate-fade-in-up">
+    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6 animate-fade-in-up">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">分析状态</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <h3 className="text-base md:text-lg font-semibold text-gray-800">分析状态</h3>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${
             config.color === 'blue' ? 'bg-blue-100 text-blue-700' :
             config.color === 'purple' ? 'bg-purple-100 text-purple-700' :
@@ -57,8 +57,8 @@ export default function AnalysisStatus({ status, progress }: AnalysisStatusProps
           <p className="text-sm text-gray-600 text-right">{progress}%</p>
         </div>
 
-        {/* 阶段列表 */}
-        <div className="grid grid-cols-5 gap-2 mt-4">
+        {/* 阶段列表 - 响应式：移动端单列，桌面端5列 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
           {stages.map((stage, index) => {
             const stageConfig = statusConfig[stage]
             const isActive = index === currentStageIndex

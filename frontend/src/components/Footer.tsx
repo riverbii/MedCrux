@@ -7,9 +7,9 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="glass border-t border-gray-200 mt-12">
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <footer className="glass border-t border-gray-200 mt-8 md:mt-12">
+        <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {/* Copyright */}
             <div>
               <p className="text-sm text-gray-600">

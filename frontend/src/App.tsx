@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import FileUpload from './components/FileUpload'
+import ImageDisplay from './components/ImageDisplay'
 import AnalysisStatus from './components/AnalysisStatus'
 import AbnormalFindings from './components/AbnormalFindings'
 import OverallAssessment from './components/OverallAssessment'
@@ -11,11 +12,24 @@ import { analyzeReport, getHealth } from './services/api'
 
 function App() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [ocrText, setOcrText] = useState<string>('')
   const [analysisStatus, setAnalysisStatus] = useState<StatusType>('idle')
   const [analysisProgress, setAnalysisProgress] = useState<number>(0)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  // 当文件上传时，创建预览URL
+  useEffect(() => {
+    if (uploadedFile) {
+      const url = URL.createObjectURL(uploadedFile)
+      setImageUrl(url)
+      return () => URL.revokeObjectURL(url)
+    } else {
+      setImageUrl(null)
+    }
+  }, [uploadedFile])
 
   // 检查后端健康状态
   useEffect(() => {
@@ -62,9 +76,10 @@ function App() {
         setAnalysisProgress(85)
       }, 8000)
 
-      const result = await analyzeReport(uploadedFile)
+      const response = await analyzeReport(uploadedFile)
       clearInterval(progressInterval)
-      setAnalysisResult(result)
+      setAnalysisResult(response.result)
+      setOcrText(response.ocrText || '')
       setAnalysisStatus('completed')
       setAnalysisProgress(100)
 
@@ -85,13 +100,18 @@ function App() {
     <div className="min-h-screen flex flex-col">
       <Disclaimer />
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 py-4 md:py-8 max-w-7xl">
         <div className="space-y-6">
           {/* 文件上传区域 */}
           <FileUpload
             onFileSelect={setUploadedFile}
             uploadedFile={uploadedFile}
           />
+
+          {/* 图像和OCR显示 */}
+          {imageUrl && (
+            <ImageDisplay imageUrl={imageUrl} ocrText={ocrText} />
+          )}
 
           {/* 分析按钮 */}
           {uploadedFile && !analysisResult && (
@@ -116,23 +136,28 @@ function App() {
 
           {/* 异常发现和整体评估 */}
           {analysisResult && (
-            <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 lg:col-span-3">
-                <AbnormalFindings
-                  findings={analysisResult.findings}
-                  selectedId={selectedFindingId}
-                  onSelect={setSelectedFindingId}
-                />
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* 异常发现列表 - 响应式：移动端全宽，桌面端3列 */}
+                <div className="lg:col-span-3">
+                  <AbnormalFindings
+                    findings={analysisResult.findings}
+                    selectedId={selectedFindingId}
+                    onSelect={setSelectedFindingId}
+                  />
+                </div>
+                {/* 异常发现详情 - 响应式：移动端全宽，桌面端9列 */}
+                <div className="lg:col-span-9">
+                  <AbnormalFindings
+                    findings={analysisResult.findings}
+                    selectedId={selectedFindingId}
+                    onSelect={setSelectedFindingId}
+                    showDetails={true}
+                  />
+                </div>
               </div>
-              <div className="col-span-12 lg:col-span-9">
-                <AbnormalFindings
-                  findings={analysisResult.findings}
-                  selectedId={selectedFindingId}
-                  onSelect={setSelectedFindingId}
-                  showDetails={true}
-                />
-              </div>
-              <div className="col-span-12">
+              {/* 整体评估 - 全宽 */}
+              <div>
                 <OverallAssessment assessment={analysisResult.overallAssessment} />
               </div>
             </div>

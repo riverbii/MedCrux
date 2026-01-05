@@ -64,20 +64,46 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
   // 优先使用新格式
   if (aiResult._new_format) {
     const newFormat = aiResult._new_format
-    const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => ({
-      id: nodule.id || `finding_${index + 1}`,
-      name: nodule.name || `异常发现${index + 1}`,
-      risk: nodule.risk_assessment || 'Low',
-      location: nodule.location || { breast: 'left', clockPosition: '12点' },
-      size: nodule.size,
-      morphology: nodule.morphology,
-      birads: nodule.birads_class,
-      inconsistencyAlerts: nodule.inconsistency_reasons || [],
-    }))
+      const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => {
+      // 解析size字符串（格式：长径×横径×前后径 cm）
+      let sizeObj: { length: number; width: number; depth: number } | undefined
+      if (nodule.morphology?.size) {
+        const sizeStr = nodule.morphology.size
+        const match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
+        if (match) {
+          sizeObj = {
+            length: parseFloat(match[1]),
+            width: parseFloat(match[2]),
+            depth: parseFloat(match[3]),
+          }
+        }
+      }
+
+      return {
+        id: nodule.id || `finding_${index + 1}`,
+        name: nodule.name || `异常发现${index + 1}`,
+        risk: (nodule.risk_assessment === 'High' ? 'High' : nodule.risk_assessment === 'Medium' ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
+        location: {
+          breast: (nodule.location?.breast === 'right' ? 'right' : 'left') as 'left' | 'right',
+          clockPosition: nodule.location?.clock_position || nodule.location?.clockPosition || '12点',
+          distanceFromNipple: nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple,
+        },
+        size: sizeObj || nodule.size,
+        morphology: nodule.morphology,
+        birads: nodule.birads_class,
+        inconsistencyAlerts: nodule.inconsistency_reasons || [],
+      }
+    })
 
     const overallAssessment: OverallAssessment = {
-      summary: newFormat.overall_assessment?.summary || '',
-      facts: newFormat.overall_assessment?.facts || [],
+      summary: typeof newFormat.overall_assessment?.summary === 'string' 
+        ? newFormat.overall_assessment.summary 
+        : Array.isArray(newFormat.overall_assessment?.summary)
+        ? newFormat.overall_assessment.summary.join(' ')
+        : '',
+      facts: Array.isArray(newFormat.overall_assessment?.summary) 
+        ? newFormat.overall_assessment.summary 
+        : newFormat.overall_assessment?.facts || [],
       suggestions: newFormat.overall_assessment?.suggestions || [],
       birads: newFormat.overall_assessment?.birads,
     }
@@ -87,20 +113,46 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
 
   // 使用旧格式（向后兼容）
   if (aiResult.nodules && aiResult.nodules.length > 0) {
-    const findings: AbnormalFinding[] = aiResult.nodules.map((nodule, index) => ({
-      id: nodule.id || `finding_${index + 1}`,
-      name: nodule.name || `异常发现${index + 1}`,
-      risk: nodule.risk_assessment || 'Low',
-      location: nodule.location || { breast: 'left', clockPosition: '12点' },
-      size: nodule.size,
-      morphology: nodule.morphology,
-      birads: nodule.birads_class,
-      inconsistencyAlerts: nodule.inconsistency_reasons || [],
-    }))
+    const findings: AbnormalFinding[] = aiResult.nodules.map((nodule, index) => {
+      // 解析size字符串（格式：长径×横径×前后径 cm）
+      let sizeObj: { length: number; width: number; depth: number } | undefined
+      if (nodule.morphology?.size) {
+        const sizeStr = nodule.morphology.size
+        const match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
+        if (match) {
+          sizeObj = {
+            length: parseFloat(match[1]),
+            width: parseFloat(match[2]),
+            depth: parseFloat(match[3]),
+          }
+        }
+      }
+
+      return {
+        id: nodule.id || `finding_${index + 1}`,
+        name: nodule.name || `异常发现${index + 1}`,
+        risk: (nodule.risk_assessment === 'High' ? 'High' : nodule.risk_assessment === 'Medium' ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
+        location: {
+          breast: (nodule.location?.breast === 'right' ? 'right' : 'left') as 'left' | 'right',
+          clockPosition: nodule.location?.clock_position || nodule.location?.clockPosition || '12点',
+          distanceFromNipple: nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple,
+        },
+        size: sizeObj || nodule.size,
+        morphology: nodule.morphology,
+        birads: nodule.birads_class,
+        inconsistencyAlerts: nodule.inconsistency_reasons || [],
+      }
+    })
 
     const overallAssessment: OverallAssessment = {
-      summary: aiResult.overall_assessment?.summary || '',
-      facts: aiResult.overall_assessment?.facts || [],
+      summary: typeof aiResult.overall_assessment?.summary === 'string' 
+        ? aiResult.overall_assessment.summary 
+        : Array.isArray(aiResult.overall_assessment?.summary)
+        ? aiResult.overall_assessment.summary.join(' ')
+        : '',
+      facts: Array.isArray(aiResult.overall_assessment?.summary) 
+        ? aiResult.overall_assessment.summary 
+        : aiResult.overall_assessment?.facts || [],
       suggestions: aiResult.overall_assessment?.suggestions || [],
       birads: aiResult.overall_assessment?.birads,
     }
@@ -119,7 +171,12 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
   }
 }
 
-export const analyzeReport = async (file: File): Promise<AnalysisResult> => {
+export interface AnalyzeReportResponse {
+  result: AnalysisResult
+  ocrText: string
+}
+
+export const analyzeReport = async (file: File): Promise<AnalyzeReportResponse> => {
   const formData = new FormData()
   formData.append('file', file)
 
@@ -129,7 +186,10 @@ export const analyzeReport = async (file: File): Promise<AnalysisResult> => {
     },
   })
 
-  return convertToAnalysisResult(response.data)
+  return {
+    result: convertToAnalysisResult(response.data),
+    ocrText: response.data.ocr_text || '',
+  }
 }
 
 export const getHealth = async (): Promise<HealthResponse> => {

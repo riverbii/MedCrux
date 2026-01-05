@@ -18,16 +18,16 @@ export default function AbnormalFindings({
   if (showDetails) {
     // 显示详情
     if (!selectedFinding) {
-      return (
-        <div className="glass rounded-2xl shadow-elegant p-8 h-full flex items-center justify-center">
-          <p className="text-gray-500">请选择一个异常发现查看详情</p>
-        </div>
-      )
-    }
-
     return (
-      <div className="glass rounded-2xl shadow-elegant p-6 h-full">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">异常发现详情</h3>
+      <div className="glass rounded-2xl shadow-elegant p-6 md:p-8 h-full flex items-center justify-center">
+        <p className="text-gray-500 text-sm md:text-base">请选择一个异常发现查看详情</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6 h-full">
+      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">异常发现详情</h3>
         <div className="space-y-4">
           <div>
             <h4 className="font-semibold text-gray-700 mb-2">基本信息</h4>
@@ -112,8 +112,8 @@ export default function AbnormalFindings({
 
   // 显示列表
   return (
-    <div className="glass rounded-2xl shadow-elegant p-6 h-full">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">异常发现列表</h3>
+    <div className="glass rounded-2xl shadow-elegant p-4 md:p-6 h-full">
+      <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">异常发现列表</h3>
       <div className="space-y-2">
         {findings.length === 0 ? (
           <p className="text-gray-500 text-center py-8">暂无异常发现</p>
