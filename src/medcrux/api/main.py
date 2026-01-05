@@ -29,6 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API路由前缀
+api_router = app
 
 class HealthResponse(BaseModel):
     status: str
@@ -42,7 +44,7 @@ class AnalysisResponse(BaseModel):
     message: str
 
 
-@app.get("/health", response_model=HealthResponse)
+@api_router.get("/api/health", response_model=HealthResponse)
 async def health_check():
     """
     健康检查接口：用于监控系统确认服务是否存活
@@ -51,7 +53,7 @@ async def health_check():
     return {"status": "operational", "version": "1.3.0"}
 
 
-@app.post("/analyze/upload", response_model=AnalysisResponse)
+@api_router.post("/api/analyze/upload", response_model=AnalysisResponse)
 async def analyze_report(file: UploadFile = File(...)):
     """
     分析医学影像报告接口
