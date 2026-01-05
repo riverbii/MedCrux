@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react'
 import Logo from './Logo'
+import LoadingSpinner from './LoadingSpinner'
 
 const PatientEducationModal = lazy(() => import('./PatientEducationModal'))
 
@@ -84,7 +85,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<LoadingSpinner size="sm" />}>
         <PatientEducationModal
           isOpen={showEducationModal}
           onClose={() => setShowEducationModal(false)}

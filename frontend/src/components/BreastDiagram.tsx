@@ -9,42 +9,57 @@ interface BreastDiagramProps {
 export default function BreastDiagram({ findings, selectedId, onSelect }: BreastDiagramProps) {
   // 计算钟点位置的角度（12点为90度，顺时针递减）
   const getClockPositionAngle = (clockPosition: string): number => {
-    const match = clockPosition.match(/(\d+)/)
-    if (!match) return 90 // 默认12点方向
-    const hour = parseInt(match[1])
     // 12点=90度(上), 3点=0度(右), 6点=-90度(下), 9点=180度(左)
-    // 转换为弧度：角度 = 90 - (hour * 30)
-    const angleDegrees = 90 - (hour * 30)
-    return angleDegrees
+    if (clockPosition.includes('12点')) return 90.0
+    if (clockPosition.includes('1点')) return 60.0
+    if (clockPosition.includes('2点')) return 30.0
+    if (clockPosition.includes('3点')) return 0.0
+    if (clockPosition.includes('4点')) return -30.0
+    if (clockPosition.includes('5点')) return -60.0
+    if (clockPosition.includes('6点')) return -90.0
+    if (clockPosition.includes('7点')) return -120.0
+    if (clockPosition.includes('8点')) return -150.0
+    if (clockPosition.includes('9点')) return 180.0
+    if (clockPosition.includes('10点')) return 150.0
+    if (clockPosition.includes('11点')) return 120.0
+    return 90.0 // 默认12点方向
   }
 
   // 计算钟点位置的坐标
   const getClockPositionCoords = (
     clockPosition: string,
     distanceFromNipple: number | undefined,
-    radius: number
+    breast: 'left' | 'right',
+    diagramRadius: number = 85 // SVG坐标中的半径（0-100范围）
   ) => {
     const angleDegrees = getClockPositionAngle(clockPosition)
     const angleRadians = (angleDegrees * Math.PI) / 180
     const centerX = 150
     const centerY = 150
     
-    // 基础半径（钟点位置）
-    let finalRadius = radius
+    // 计算半径
+    let finalRadius = diagramRadius * 0.45 // 默认位置（象限中心）
     
-    // 如果有距乳头距离，调整半径
     if (distanceFromNipple) {
-      // 实际乳腺半径约7.5cm，示意图半径100px
-      // 比例：100px / 7.5cm ≈ 13.3px/cm
-      const scale = 100 / 7.5
-      finalRadius = distanceFromNipple * scale
-      // 限制在合理范围内
-      finalRadius = Math.min(Math.max(finalRadius, 20), 90)
+      // 实际乳腺半径约7.5cm，示意图半径85（相对坐标）
+      const actualBreastRadius = 7.5 // cm
+      const ratio = Math.min(distanceFromNipple / actualBreastRadius, 0.9)
+      finalRadius = diagramRadius * ratio
+    } else {
+      // 如果没有距离信息，使用默认半径
+      finalRadius = diagramRadius * 0.45
     }
     
+    // 计算基础坐标
+    const xPosBase = finalRadius * Math.cos(angleRadians)
+    const yPos = finalRadius * Math.sin(angleRadians)
+    
+    // 对于左乳：直接使用；对于右乳：镜像x坐标
+    const xPos = breast === 'left' ? xPosBase : -xPosBase
+    
     return {
-      x: centerX + finalRadius * Math.cos(angleRadians),
-      y: centerY - finalRadius * Math.sin(angleRadians), // 注意：SVG的Y轴向下
+      x: centerX + xPos,
+      y: centerY - yPos, // 注意：SVG的Y轴向下，所以用减号
     }
   }
 
@@ -89,7 +104,7 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
             const coords = getClockPositionCoords(
               finding.location.clockPosition,
               finding.location.distanceFromNipple,
-              60 // 基础半径
+              breast
             )
             const isSelected = finding.id === selectedId
             const riskColor = riskColors[finding.risk]
@@ -98,8 +113,8 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
             let markerSize = 8
             if (finding.size) {
               const longAxis = finding.size.length
-              // 实际乳腺半径约7.5cm，示意图半径100px
-              const scale = 100 / 7.5
+              // 实际乳腺半径约7.5cm，示意图半径85（相对坐标）
+              const scale = 85 / 7.5
               markerSize = Math.min(Math.max(longAxis * scale * 0.5, 6), 16)
             }
 

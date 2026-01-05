@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
+import LoadingSpinner from './LoadingSpinner'
 
 const PrivacyModal = lazy(() => import('./PrivacyModal'))
 
@@ -53,7 +54,7 @@ export default function Footer() {
         </div>
       </footer>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<LoadingSpinner size="sm" />}>
         <PrivacyModal
           isOpen={showPrivacyModal}
           onClose={() => setShowPrivacyModal(false)}
