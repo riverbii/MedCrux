@@ -13,6 +13,7 @@ export default function FileUpload({ onFileSelect, uploadedFile }: FileUploadPro
     if (file) {
       if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg') {
         if (file.size <= 10 * 1024 * 1024) {
+          // 立即调用onFileSelect，确保文件被处理
           onFileSelect(file)
         } else {
           alert('文件大小不能超过10MB')
@@ -21,6 +22,13 @@ export default function FileUpload({ onFileSelect, uploadedFile }: FileUploadPro
         alert('只支持JPG/PNG格式的图片')
       }
     }
+    // 重置input的value，确保可以重复选择同一个文件
+    // 必须在onChange中重置，而不是在onClick中
+    setTimeout(() => {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }, 0)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -47,17 +55,16 @@ export default function FileUpload({ onFileSelect, uploadedFile }: FileUploadPro
     <div className="relative group">
       {/* 文件上传区域 - 按照layout v2原型样式 */}
       <div
-        className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl p-8 min-h-[400px] flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-colors cursor-pointer"
+        className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl p-8 min-h-[400px] flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-colors cursor-pointer relative"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        onClick={() => fileInputRef.current?.click()}
       >
         <input
           ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/jpg"
           onChange={handleFileChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         />
         {uploadedFile ? (
           <div className="text-center">

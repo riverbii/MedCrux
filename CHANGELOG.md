@@ -9,6 +9,13 @@
 
 ## [1.3.0] - 2026-01-05
 
+### Known Issues
+- 左乳房11点钟方向不对（计划v1.3.1修复）
+- cm/mm 单位分不清（计划v1.3.1修复）
+- OCR识别到的异常发现信息，结构化异常发现时丢失（计划v1.3.1修复）
+
+详见：[v1.3.0已知问题列表](docs/dev/versions/v1.3.0/KNOWN_ISSUES.md)
+
 ### Added
 - 前端框架升级：从Streamlit迁移到React + TypeScript + Tailwind CSS
 - Logo设计：MedCrux专属Logo（瞄准镜主题）

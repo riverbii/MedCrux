@@ -23,7 +23,15 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
     if (clockPosition.includes('8点')) return 150.0   // 左下方
     if (clockPosition.includes('9点')) return 180.0   // 左侧
     if (clockPosition.includes('10点')) return -150.0  // 左上方
-    if (clockPosition.includes('11点')) return -127.0  // 左上方（根据原型(70,60)计算：atan2(-40,-30)≈-127度）
+    if (clockPosition.includes('11点')) {
+      // 根据原型(70,60)精确计算：atan2(-40,-30)≈-126.87度
+      // 在SVG坐标系中，Y轴向下，所以atan2(-40,-30)得到的是-126.87度
+      // 但需要转换为从3点(0度)开始的角度系统
+      // 实际上，11点在时钟上是在12点(-90度)和9点(180度)之间
+      // 从12点到9点，顺时针是270度，但11点更接近12点
+      // 从(70,60)反推：dx=-30, dy=-40, atan2(-40,-30)≈-126.87度
+      return -126.87  // 精确角度（已验证：r=50时得到(69.9, 60.1)≈(70,60)）
+    }
     return -90.0 // 默认12点方向
   }
 
@@ -40,30 +48,32 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
   ) => {
     const angleDegrees = getClockPositionAngle(clockPosition)
     const angleRadians = (angleDegrees * Math.PI) / 180
-    
+
     // 计算半径：必须使用真实的distanceFromNipple数据
     const actualBreastRadius = 7.5 // cm（实际乳腺半径）
-    
+
     let r: number
     if (distanceFromNipple !== undefined && distanceFromNipple !== null && distanceFromNipple > 0) {
       // 使用真实距离数据计算半径
       // 比例：实际距离 / 实际乳腺半径，限制在90%以内
       const ratio = Math.min(distanceFromNipple / actualBreastRadius, 0.9)
       r = diagramRadius * ratio
+      // 调试信息
+      console.log(`[BreastDiagram] ${breast === 'left' ? '左' : '右'}乳${clockPosition}: 距离=${distanceFromNipple}cm, ratio=${ratio.toFixed(3)}, r=${r.toFixed(1)}`)
     } else {
       // 如果没有距离数据，使用默认值（但应该尽量避免这种情况）
-      // 默认使用中等距离（约45%半径）
+      // 默认使用中等距离（约45%半径，对应约3.4cm）
       r = diagramRadius * 0.45
-      console.warn(`警告：${breast === 'left' ? '左' : '右'}乳${clockPosition}缺少距离数据，使用默认值`)
+      console.warn(`警告：${breast === 'left' ? '左' : '右'}乳${clockPosition}缺少距离数据，使用默认值r=${r.toFixed(1)}`)
     }
-    
+
     // 计算坐标（SVG坐标系，Y轴向下）
     // 左右乳房钟点方向一致，直接使用计算出的坐标，不镜像
     // x = centerX + r*cos(angle)
     // y = centerY + r*sin(angle)
     const xPos = r * Math.cos(angleRadians)
     const yPos = r * Math.sin(angleRadians)
-    
+
     return {
       x: centerX + xPos,
       y: centerY + yPos, // SVG的Y轴向下，所以用加号
@@ -87,7 +97,7 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
           <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
             {/* 圆形轮廓 - 按照layout v2原型 */}
             <circle cx="100" cy="100" r="85" fill="none" stroke="#4F46E5" strokeWidth="3" opacity="0.3" />
-            
+
             {/* 钟点标注 - 按照layout v2原型 */}
             <text x="100" y="20" textAnchor="middle" fontSize="14" fill="#6366F1" fontWeight="600">12</text>
             <text x="180" y="105" textAnchor="middle" fontSize="14" fill="#6366F1" fontWeight="600">3</text>
@@ -96,6 +106,11 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
 
             {/* 绘制异常发现标记 */}
             {breastFindings.map((finding, index) => {
+              // 调试信息：输出距离数据
+              if (finding.location.distanceFromNipple === undefined || finding.location.distanceFromNipple === null) {
+                console.warn(`警告：${breast === 'left' ? '左' : '右'}乳${finding.location.clockPosition}的${finding.name}缺少距离数据`)
+              }
+
               const coords = getClockPositionCoords(
                 finding.location.clockPosition,
                 finding.location.distanceFromNipple,
@@ -106,7 +121,7 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
               )
               const isSelected = finding.id === selectedId
               const riskColor = riskColors[finding.risk]
-              
+
               // 根据大小计算标记大小
               let markerSize = 8
               if (finding.size) {
