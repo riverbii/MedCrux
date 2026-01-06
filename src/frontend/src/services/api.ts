@@ -31,10 +31,45 @@ function parseDistanceFromNipple(distance: any): number | undefined {
 }
 
 // 从OCR文本中提取原报告事实性摘要和结论
-function extractOriginalReportSummary(ocrText: string): {
+function extractOriginalReportSummary(
+  ocrText: string,
+  reportStructure?: { findings?: string | null; diagnosis?: string | null; recommendation?: string | null } | null
+): {
   factualSummary?: { findings?: string }
   conclusion?: { diagnosis?: string; recommendation?: string }
 } {
+  // 优先使用后端LLM解析的报告结构结果
+  if (reportStructure) {
+    const result: {
+      factualSummary?: { findings?: string }
+      conclusion?: { diagnosis?: string; recommendation?: string }
+    } = {}
+
+    // 使用后端解析的findings作为事实性摘要
+    if (reportStructure.findings) {
+      result.factualSummary = {
+        findings: reportStructure.findings
+      }
+    }
+
+    // 使用后端解析的diagnosis和recommendation作为结论
+    if (reportStructure.diagnosis || reportStructure.recommendation) {
+      result.conclusion = {}
+      if (reportStructure.diagnosis) {
+        result.conclusion.diagnosis = reportStructure.diagnosis
+      }
+      if (reportStructure.recommendation) {
+        result.conclusion.recommendation = reportStructure.recommendation
+      }
+    }
+
+    // 如果后端解析结果存在，直接返回
+    if (result.factualSummary || result.conclusion) {
+      return result
+    }
+  }
+
+  // Fallback：如果后端解析失败或不存在，使用正则表达式从OCR文本中提取
   if (!ocrText || ocrText.trim().length === 0) {
     return {}
   }
