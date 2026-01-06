@@ -40,7 +40,7 @@ export default function AbnormalFindings({
           可疑程度：{riskText}
         </div>
       </div>
-      
+
       <div className="space-y-4">
         {/* 关键信息网格 - 按照layout v2原型 */}
         <div className="grid grid-cols-2 gap-4">
@@ -67,12 +67,13 @@ export default function AbnormalFindings({
           )}
           {selectedFinding.birads && (
             <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4">
-              <div className="text-xs text-gray-600 mb-1">BI-RADS</div>
+              <div className="text-xs text-gray-600 mb-1">AI评估 BI-RADS</div>
               <div className="text-sm font-semibold text-red-600">{selectedFinding.birads}类</div>
+              <div className="text-xs text-gray-500 mt-1">（仅供参考）</div>
             </div>
           )}
         </div>
-        
+
         {/* 不一致预警 - 按照layout v2原型 */}
         {selectedFinding.inconsistencyAlerts && selectedFinding.inconsistencyAlerts.length > 0 && (
           <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
@@ -126,7 +127,8 @@ export default function AbnormalFindings({
                   </span>
                 </div>
                 <div className={`text-xs ${isSelected ? 'text-white/80' : 'text-gray-600'}`}>
-                  可疑程度：{finding.risk === 'High' ? '高' : finding.risk === 'Medium' ? '中' : '低'} · {finding.location.breast === 'left' ? '左' : '右'}乳 {finding.location.clockPosition}
+                  {finding.birads && <span>🤖 BI-RADS {finding.birads}类 · </span>}
+                  {finding.location.breast === 'left' ? '左' : '右'}乳 {finding.location.clockPosition}
                 </div>
                 {finding.size && (
                   <div className={`mt-2 text-xs ${isSelected ? 'text-white/70' : 'text-gray-500'}`}>
@@ -141,4 +143,3 @@ export default function AbnormalFindings({
     </div>
   )
 }
-

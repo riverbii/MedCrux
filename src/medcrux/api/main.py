@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from medcrux.analysis.llm_engine import analyze_text_with_deepseek
+from medcrux.analysis.report_structure_parser import parse_report_structure
 from medcrux.ingestion.ocr_service import extract_text_from_bytes
 from medcrux.utils.logger import log_error_with_context, setup_logger
 
@@ -40,6 +41,7 @@ class AnalysisResponse(BaseModel):
     ocr_text: str
     ai_result: dict
     message: str
+    report_structure: dict | None = None  # 报告结构解析结果（可选）
 
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -88,7 +90,22 @@ async def analyze_report(file: UploadFile = File(...)):
                 "message": "未能识别出有效文字，请上传清晰的图片。",
             }
 
-        # 4. AI分析
+        # 4. 报告结构解析（提取事实性摘要和结论）
+        logger.info("开始报告结构解析")
+        report_structure = None
+        try:
+            report_structure = parse_report_structure(raw_text)
+            logger.info("报告结构解析完成")
+        except Exception as e:
+            log_error_with_context(
+                logger,
+                e,
+                context={"step": "报告结构解析", "ocr_text_length": len(raw_text), **context},
+                operation="报告结构解析",
+            )
+            logger.warning("报告结构解析失败，将使用前端fallback逻辑")
+
+        # 5. AI分析
         logger.info("开始AI分析")
         try:
             ai_analysis = analyze_text_with_deepseek(raw_text)
@@ -110,7 +127,7 @@ async def analyze_report(file: UploadFile = File(...)):
                 "message": "OCR识别完成，但AI分析失败。",
             }
 
-        # 5. 格式适配：为了向后兼容，将新格式转换为旧格式（临时方案，阶段2会更新UI）
+        # 6. 格式适配：为了向后兼容，将新格式转换为旧格式（临时方案，阶段2会更新UI）
         # 新格式：{"nodules": [...], "overall_assessment": {...}}
         # 旧格式：{"extracted_shape": "...", "ai_risk_assessment": "...", ...}
         def convert_new_to_old_format(new_result: dict) -> dict:
@@ -163,18 +180,26 @@ async def analyze_report(file: UploadFile = File(...)):
                 "advice": overall_assessment.get("advice", ""),
                 # 保留新格式数据，供阶段2使用
                 "_new_format": new_result,
+                # 添加报告结构解析结果（如果可用）
+                "_report_structure": report_structure,
             }
 
         ai_result_for_ui = convert_new_to_old_format(ai_analysis)
 
-        # 6. 返回结果
+        # 7. 返回结果（包含报告结构解析结果）
         logger.info(f"分析完成 [文件: {file.filename}]")
-        return {
+        response_data = {
             "filename": file.filename,
             "ocr_text": raw_text,
             "ai_result": ai_result_for_ui,
             "message": "分析完成",
         }
+
+        # 如果报告结构解析成功，添加到响应中
+        if report_structure:
+            response_data["report_structure"] = report_structure
+
+        return response_data
 
     except HTTPException:
         # HTTPException直接抛出

@@ -11,12 +11,12 @@ function parseDistanceFromNipple(distance: any): number | undefined {
   if (distance === undefined || distance === null) {
     return undefined
   }
-  
+
   // 如果是数字，直接返回
   if (typeof distance === 'number') {
     return distance > 0 ? distance : undefined
   }
-  
+
   // 如果是字符串，尝试解析
   if (typeof distance === 'string') {
     // 移除"cm"等单位，提取数字
@@ -26,8 +26,63 @@ function parseDistanceFromNipple(distance: any): number | undefined {
       return num > 0 ? num : undefined
     }
   }
-  
+
   return undefined
+}
+
+// 从OCR文本中提取原报告事实性摘要和结论
+function extractOriginalReportSummary(ocrText: string): {
+  factualSummary?: { findings?: string }
+  conclusion?: { diagnosis?: string; recommendation?: string }
+} {
+  if (!ocrText || ocrText.trim().length === 0) {
+    return {}
+  }
+
+  const text = ocrText.trim()
+  const result: {
+    factualSummary?: { findings?: string }
+    conclusion?: { diagnosis?: string; recommendation?: string }
+  } = {}
+
+  // 提取"检查所见"或"检查结果"部分（事实性摘要）
+  const findingsMatch = text.match(/(?:检查所见|检查结果|所见)[:：]?\s*([^影像学诊断诊断建议]*?)(?=影像学诊断|诊断|建议|$)/s)
+  if (findingsMatch && findingsMatch[1]) {
+    result.factualSummary = {
+      findings: findingsMatch[1].trim()
+    }
+  }
+
+  // 提取"影像学诊断"或"诊断"部分（结论）
+  const diagnosisMatch = text.match(/(?:影像学诊断|诊断|诊断意见)[:：]?\s*([^建议]*?)(?=建议|$)/s)
+  const recommendationMatch = text.match(/(?:建议|处理建议|临床建议)[:：]?\s*(.+?)(?=报告医师|审核医师|报告日期|$)/s)
+
+  if (diagnosisMatch || recommendationMatch) {
+    result.conclusion = {}
+    if (diagnosisMatch && diagnosisMatch[1]) {
+      result.conclusion.diagnosis = diagnosisMatch[1].trim()
+    }
+    if (recommendationMatch && recommendationMatch[1]) {
+      result.conclusion.recommendation = recommendationMatch[1].trim()
+    }
+  }
+
+  // 如果上述方法都没提取到，尝试提取整个文本的关键部分
+  if (!result.factualSummary && !result.conclusion) {
+    const lines = text.split('\n').filter(line => line.trim().length > 0)
+    const findingsEnd = Math.floor(lines.length * 0.6)
+    const diagnosisEnd = Math.floor(lines.length * 0.8)
+
+    result.factualSummary = {
+      findings: lines.slice(0, findingsEnd).join('\n')
+    }
+    result.conclusion = {
+      diagnosis: lines.slice(findingsEnd, diagnosisEnd).join('\n'),
+      recommendation: lines.slice(diagnosisEnd).join('\n')
+    }
+  }
+
+  return result
 }
 
 export interface HealthResponse {
@@ -82,7 +137,11 @@ export interface AnalysisResponse {
 }
 
 // 转换后端响应为前端格式
-function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
+function convertToAnalysisResult(
+  response: AnalysisResponse,
+  ocrText?: string,
+  reportStructure?: AnalysisResponse['report_structure']
+): AnalysisResult {
   const aiResult = response.ai_result || {}
 
   // 处理错误情况
@@ -146,12 +205,12 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       .map(f => `${f.name}：${f.inconsistencyAlerts.join('；')}`)
 
     // 生成详细事实摘要（如果LLM返回的不够详细）
-    const llmSummary = typeof newFormat.overall_assessment?.summary === 'string' 
-      ? newFormat.overall_assessment.summary 
+    const llmSummary = typeof newFormat.overall_assessment?.summary === 'string'
+      ? newFormat.overall_assessment.summary
       : Array.isArray(newFormat.overall_assessment?.summary)
       ? newFormat.overall_assessment.summary.join(' ')
       : ''
-    
+
     const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
     const summaryIsInsufficient = llmSummary.length < totalNodules * 50
 
@@ -161,7 +220,7 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       detailedFacts = findings.map((finding, index) => {
         const parts: string[] = []
         parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
-        
+
         if (finding.size) {
           parts.push(`大小${finding.size.length}×${finding.size.width}×${finding.size.depth}cm`)
         }
@@ -184,7 +243,7 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
         if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
           parts.push('⚠️存在不一致')
         }
-        
+
         return parts.join('，')
       })
     } else {
@@ -195,6 +254,42 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
         detailedFacts = [llmSummary]
       }
     }
+
+    // 计算一致性校验结果
+    const consistentFindings = findings.filter(f => !f.inconsistencyAlerts || f.inconsistencyAlerts.length === 0)
+    const inconsistentFindings = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
+
+    const consistencyCheck = {
+      status: (inconsistentFindings.length > 0 ? 'has_inconsistency' : 'all_consistent') as 'all_consistent' | 'has_inconsistency',
+      consistentCount: consistentFindings.length,
+      inconsistentCount: inconsistentFindings.length,
+      inconsistentDetails: inconsistentFindings.map(f => ({
+        findingName: f.name,
+        originalBirads: f.birads || '未分类',
+        reasons: f.inconsistencyAlerts || [],
+      })),
+      consistentDetails: consistentFindings.map(f => ({
+        findingName: f.name,
+        originalBirads: f.birads || '未分类',
+      })),
+    }
+
+    // 计算基于一致性校验的风险评估
+    const consistencyBasedRisk = {
+      level: (inconsistentFindings.length > 0 ? 'High' : inconsistentFindings.length === 0 && totalNodules > 0 ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
+      description: inconsistentFindings.length > 0
+        ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确，建议重新评估。不一致的异常发现可能存在风险被低估的情况。`
+        : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
+    }
+
+    // 计算原报告最高BI-RADS分类
+    const allBirads = findings.map(f => f.birads).filter((b): b is string => !!b)
+    const highestBirads = allBirads.length > 0
+      ? allBirads.sort((a, b) => parseInt(b) - parseInt(a))[0]
+      : undefined
+
+    // 从OCR文本中提取原报告事实性摘要和结论（优先使用后端解析结果）
+    const originalReportData = ocrText ? extractOriginalReportSummary(ocrText, reportStructure) : {}
 
     const overallAssessment: OverallAssessment = {
       summary: llmSummary || detailedFacts.join(' '),
@@ -207,6 +302,14 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       advice: newFormat.overall_assessment?.advice || '',
       inconsistencyCount,
       inconsistencySummary: inconsistencySummary.length > 0 ? inconsistencySummary : undefined,
+      originalReport: {
+        highestBirads,
+        totalFindings: totalNodules,
+        factualSummary: originalReportData.factualSummary,
+        conclusion: originalReportData.conclusion,
+      },
+      consistencyCheck,
+      consistencyBasedRisk,
     }
 
     return { findings, overallAssessment }
@@ -260,12 +363,12 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       .map(f => `${f.name}：${f.inconsistencyAlerts.join('；')}`)
 
     // 生成详细事实摘要
-    const llmSummary = typeof aiResult.overall_assessment?.summary === 'string' 
-      ? aiResult.overall_assessment.summary 
+    const llmSummary = typeof aiResult.overall_assessment?.summary === 'string'
+      ? aiResult.overall_assessment.summary
       : Array.isArray(aiResult.overall_assessment?.summary)
       ? aiResult.overall_assessment.summary.join(' ')
       : ''
-    
+
     const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
     const summaryIsInsufficient = llmSummary.length < totalNodules * 50
 
@@ -274,7 +377,7 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       detailedFacts = findings.map((finding, index) => {
         const parts: string[] = []
         parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
-        
+
         if (finding.size) {
           parts.push(`大小${finding.size.length}×${finding.size.width}×${finding.size.depth}cm`)
         }
@@ -297,7 +400,7 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
         if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
           parts.push('⚠️存在不一致')
         }
-        
+
         return parts.join('，')
       })
     } else {
@@ -307,6 +410,42 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
         detailedFacts = [llmSummary]
       }
     }
+
+    // 计算一致性校验结果（旧格式）
+    const consistentFindings = findings.filter(f => !f.inconsistencyAlerts || f.inconsistencyAlerts.length === 0)
+    const inconsistentFindings = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
+
+    const consistencyCheck = {
+      status: (inconsistentFindings.length > 0 ? 'has_inconsistency' : 'all_consistent') as 'all_consistent' | 'has_inconsistency',
+      consistentCount: consistentFindings.length,
+      inconsistentCount: inconsistentFindings.length,
+      inconsistentDetails: inconsistentFindings.map(f => ({
+        findingName: f.name,
+        originalBirads: f.birads || '未分类',
+        reasons: f.inconsistencyAlerts || [],
+      })),
+      consistentDetails: consistentFindings.map(f => ({
+        findingName: f.name,
+        originalBirads: f.birads || '未分类',
+      })),
+    }
+
+    // 计算基于一致性校验的风险评估（旧格式）
+    const consistencyBasedRisk = {
+      level: (inconsistentFindings.length > 0 ? 'High' : inconsistentFindings.length === 0 && totalNodules > 0 ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
+      description: inconsistentFindings.length > 0
+        ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确，建议重新评估。不一致的异常发现可能存在风险被低估的情况。`
+        : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
+    }
+
+    // 计算原报告最高BI-RADS分类（旧格式）
+    const allBirads = findings.map(f => f.birads).filter((b): b is string => !!b)
+    const highestBirads = allBirads.length > 0
+      ? allBirads.sort((a, b) => parseInt(b) - parseInt(a))[0]
+      : undefined
+
+    // 从OCR文本中提取原报告事实性摘要和结论（优先使用后端解析结果）
+    const originalReportData = ocrText ? extractOriginalReportSummary(ocrText, reportStructure) : {}
 
     const overallAssessment: OverallAssessment = {
       summary: llmSummary || detailedFacts.join(' '),
@@ -319,6 +458,14 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
       advice: aiResult.advice || '',
       inconsistencyCount,
       inconsistencySummary: inconsistencySummary.length > 0 ? inconsistencySummary : undefined,
+      originalReport: {
+        highestBirads,
+        totalFindings: totalNodules,
+        factualSummary: originalReportData.factualSummary,
+        conclusion: originalReportData.conclusion,
+      },
+      consistencyCheck,
+      consistencyBasedRisk,
     }
 
     return { findings, overallAssessment }
@@ -329,8 +476,8 @@ function convertToAnalysisResult(response: AnalysisResponse): AnalysisResult {
     findings: [],
     overallAssessment: {
       summary: aiResult.overall_assessment?.summary || aiResult.advice || '未发现异常',
-      facts: Array.isArray(aiResult.overall_assessment?.summary) 
-        ? aiResult.overall_assessment.summary 
+      facts: Array.isArray(aiResult.overall_assessment?.summary)
+        ? aiResult.overall_assessment.summary
         : aiResult.overall_assessment?.facts || [],
       suggestions: aiResult.overall_assessment?.suggestions || [],
       birads: aiResult.overall_assessment?.birads || aiResult.birads_class,
@@ -355,7 +502,7 @@ export const analyzeReport = async (file: File): Promise<AnalyzeReportResponse> 
     })
 
     return {
-      result: convertToAnalysisResult(response.data),
+      result: convertToAnalysisResult(response.data, response.data.ocr_text, response.data.report_structure),
       ocrText: response.data.ocr_text || '',
     }
   } catch (error: any) {
@@ -379,4 +526,3 @@ export const getHealth = async (): Promise<HealthResponse> => {
   const response = await api.get<HealthResponse>('/health')
   return response.data
 }
-
