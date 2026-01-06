@@ -214,6 +214,7 @@ logs/
 # Documentation (not tracked)
 docs/dev/
 docs/gov/
+docs/framework/
 
 # Source data
 source_data/
