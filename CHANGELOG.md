@@ -7,12 +7,55 @@
 
 ---
 
+## [1.3.1] - 2026-01-07
+
+### Fixed
+- **BUG-001**: 修复 cm/mm 单位转换问题
+  - LLM system_prompt 明确要求单位统一为 cm，mm 需转换为 cm（除以10）
+  - 前端添加 `parseDistanceFromNipple` 函数，支持多种数据格式解析
+  - 添加专门的测试用例 `test_unit_conversion_mm_to_cm` 验证转换逻辑
+- **BUG-002**: 修复左乳房11点钟方向可视化错误
+  - 根因：前端可视化代码中字符串匹配顺序错误（`clockPosition.includes('1点')` 会匹配"11点"）
+  - 修复：使用精确匹配（normalized lookup map）替代模糊匹配（`includes`）
+  - 修复字符串匹配顺序：先匹配两位数钟点（12点、11点、10点），再匹配一位数
+  - 创建可视化测试工具 `docs/gov/test_clock_positions.html` 验证所有钟点位置
+- **BUG-003**: 修复 OCR 信息丢失问题
+  - 优化事实性摘要提取逻辑，确保所有 OCR 识别的异常发现信息都能传递到 LLM 分析阶段
+
+### Added
+- **位置信息结构化输出优化**
+  - LLM 直接输出标准化的位置信息（breast, clock_position, distance_from_nipple）
+  - 统一使用4个固定钟点（1、11、5、7）进行象限转换
+  - 左右乳房镜像关系正确处理
+- **位置可视化 QA Gate**
+  - 建立位置可视化黄金用例集（覆盖左右乳1-12点）
+  - 象限→钟点固定映射验证机制
+  - BUG-002 历史事故点回归测试
+  - 详见：`docs/gov/QA_GATE_LOCATION_VISUALIZATION_v1.3.x.md`
+- **代码质量改进**
+  - 引入 Python 语言规范（Ruff + Google 风格规则）
+  - 引入 TypeScript/JavaScript 语言规范（ESLint + React 插件）
+  - 配置 pre-commit hooks，自动运行代码质量检查
+  - 前端 TypeScript 类型基线对齐，清理类型错误
+
+### Changed
+- **代码质量评分机制**
+  - 移除主观评分（95分），改为基于证据的客观指标
+  - 质量指标：TypeScript 类型检查状态、Lint 工具配置、Pre-commit hooks 状态、关键 Bug 数量
+
+### Technical
+- 代码规范文档：`docs/dev/LANGUAGE_STANDARDS.md`、`docs/dev/STANDARDS.md`、`docs/dev/CODE_REVIEW_CHECKLIST.md`
+- Framework 语言规范配置方法论：`docs/framework/04_工作规范/LANGUAGE_STANDARDS_SETUP.md`
+- 可视化测试工具：`docs/gov/test_clock_positions.html`
+
+---
+
 ## [1.3.0] - 2026-01-05
 
 ### Known Issues
-- 左乳房11点钟方向不对（计划v1.3.1修复）
-- cm/mm 单位分不清（计划v1.3.1修复）
-- OCR识别到的异常发现信息，结构化异常发现时丢失（计划v1.3.1修复）
+- ~~左乳房11点钟方向不对（v1.3.1已修复）~~
+- ~~cm/mm 单位分不清（v1.3.1已修复）~~
+- ~~OCR识别到的异常发现信息，结构化异常发现时丢失（v1.3.1已修复）~~
 
 详见：[v1.3.0已知问题列表](docs/dev/versions/v1.3.0/KNOWN_ISSUES.md)
 
