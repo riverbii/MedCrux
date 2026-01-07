@@ -55,7 +55,8 @@ export default function AbnormalFindings({
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4">
               <div className="text-xs text-gray-600 mb-1">大小</div>
               <div className="text-sm font-semibold text-gray-800">
-                {selectedFinding.size.length}×{selectedFinding.size.width}×{selectedFinding.size.depth} cm
+                {selectedFinding.size.length}×{selectedFinding.size.width}
+                {selectedFinding.size.depth > 0 ? `×${selectedFinding.size.depth}` : ''} cm
               </div>
             </div>
           )}

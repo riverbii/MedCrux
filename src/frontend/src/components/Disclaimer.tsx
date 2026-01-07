@@ -16,7 +16,7 @@ export default function Disclaimer() {
           </div>
           <div className="ml-3">
             <p className="text-sm text-yellow-700">
-              <strong>免责声明：</strong>本系统不提供医疗诊断，所有分析结果（包括BI-RADS分类）均为AI评估结果，仅供参考，不能替代专业医生的诊断和治疗建议。报告中的BI-RADS分类为AI智能评估结果，不能替代医生专业诊断。
+              <strong>免责声明：</strong>本系统不提供医疗诊断，所有分析结果（包括BI-RADS分类）均为AI评估结果，仅供参考，不能替代专业医生的诊断和治疗建议。
             </p>
           </div>
         </div>

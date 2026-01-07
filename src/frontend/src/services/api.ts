@@ -208,18 +208,33 @@ function convertToAnalysisResult(
   if (aiResult._new_format) {
     const newFormat = aiResult._new_format
     const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => {
-      // 解析size字符串（格式：长径×横径×前后径 cm）
+      // 解析size字符串（格式：长径×横径×前后径 cm 或 长径×横径 cm）
       let sizeObj: { length: number; width: number; depth: number } | undefined
       if (nodule.morphology?.size) {
         const sizeStr = nodule.morphology.size
-        const match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
+        // 先尝试匹配3个维度（长径×横径×前后径）
+        let match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
         if (match) {
           sizeObj = {
             length: parseFloat(match[1]),
             width: parseFloat(match[2]),
             depth: parseFloat(match[3]),
           }
+        } else {
+          // 如果3个维度匹配失败，尝试匹配2个维度（长径×横径）
+          match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)/)
+          if (match) {
+            sizeObj = {
+              length: parseFloat(match[1]),
+              width: parseFloat(match[2]),
+              depth: 0, // 2个维度时，depth设为0，前端显示时会忽略
+            }
+          }
         }
+      }
+      // 如果morphology.size解析失败，尝试使用nodule.size（直接来自后端）
+      if (!sizeObj && nodule.size) {
+        sizeObj = nodule.size
       }
 
       return {
@@ -367,18 +382,33 @@ function convertToAnalysisResult(
   // 使用旧格式（向后兼容）
   if (aiResult.nodules && aiResult.nodules.length > 0) {
     const findings: AbnormalFinding[] = aiResult.nodules.map((nodule, index) => {
-      // 解析size字符串（格式：长径×横径×前后径 cm）
+      // 解析size字符串（格式：长径×横径×前后径 cm 或 长径×横径 cm）
       let sizeObj: { length: number; width: number; depth: number } | undefined
       if (nodule.morphology?.size) {
         const sizeStr = nodule.morphology.size
-        const match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
+        // 先尝试匹配3个维度（长径×横径×前后径）
+        let match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
         if (match) {
           sizeObj = {
             length: parseFloat(match[1]),
             width: parseFloat(match[2]),
             depth: parseFloat(match[3]),
           }
+        } else {
+          // 如果3个维度匹配失败，尝试匹配2个维度（长径×横径）
+          match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)/)
+          if (match) {
+            sizeObj = {
+              length: parseFloat(match[1]),
+              width: parseFloat(match[2]),
+              depth: 0, // 2个维度时，depth设为0，前端显示时会忽略
+            }
+          }
         }
+      }
+      // 如果morphology.size解析失败，尝试使用nodule.size（直接来自后端）
+      if (!sizeObj && nodule.size) {
+        sizeObj = nodule.size
       }
 
       return {

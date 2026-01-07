@@ -18,7 +18,8 @@ export default function ImageDisplay({ imageUrl, ocrText, onRemove }: ImageDispl
         <img
           src={imageUrl}
           alt="预览图像"
-          className="w-full h-full object-contain"
+          className="max-w-full max-h-full object-contain"
+          style={{ maxWidth: '100%', maxHeight: '600px' }}
         />
         {onRemove && (
           <button
@@ -28,7 +29,7 @@ export default function ImageDisplay({ imageUrl, ocrText, onRemove }: ImageDispl
             ✕ 移除
           </button>
         )}
-        
+
         {/* OCR展开按钮 - 悬浮显示（分析后显示） */}
         {ocrText && (
           <button
@@ -39,7 +40,7 @@ export default function ImageDisplay({ imageUrl, ocrText, onRemove }: ImageDispl
           </button>
         )}
       </div>
-      
+
       {/* OCR原文展示区域（可展开/收起） */}
       {ocrText && showOcrText && (
         <div className="mt-4 glass rounded-2xl shadow-elegant p-6">
@@ -60,4 +61,3 @@ export default function ImageDisplay({ imageUrl, ocrText, onRemove }: ImageDispl
     </div>
   )
 }
-
