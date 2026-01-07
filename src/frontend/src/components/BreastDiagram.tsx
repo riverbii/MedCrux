@@ -12,31 +12,36 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
   // 根据原型验证：3点(180,105)→0度，9点(20,105)→180度，11点(70,60)→-127度
   const getClockPositionAngle = (clockPosition: string): number => {
     // 转换为SVG坐标系角度（从3点开始为0度，逆时针）
-    if (clockPosition.includes('12点')) return -90.0  // 顶部
-    if (clockPosition.includes('1点')) return -60.0   // 右上方
-    if (clockPosition.includes('2点')) return -30.0   // 右上方
-    if (clockPosition.includes('3点')) return 0.0     // 右侧
-    if (clockPosition.includes('4点')) return 30.0    // 右下方
-    if (clockPosition.includes('5点')) return 60.0    // 右下方
-    if (clockPosition.includes('6点')) return 90.0    // 底部
-    if (clockPosition.includes('7点')) return 120.0   // 左下方
-    if (clockPosition.includes('8点')) return 150.0   // 左下方
-    if (clockPosition.includes('9点')) return 180.0   // 左侧
-    if (clockPosition.includes('10点')) return -150.0  // 左上方
-    if (clockPosition.includes('11点')) {
-      // 根据原型(70,60)精确计算：atan2(-40,-30)≈-126.87度
-      // 在SVG坐标系中，Y轴向下，所以atan2(-40,-30)得到的是-126.87度
-      // 但需要转换为从3点(0度)开始的角度系统
-      // 实际上，11点在时钟上是在12点(-90度)和9点(180度)之间
-      // 从12点到9点，顺时针是270度，但11点更接近12点
-      // 从(70,60)反推：dx=-30, dy=-40, atan2(-40,-30)≈-126.87度
-      return -126.87  // 精确角度（已验证：r=50时得到(69.9, 60.1)≈(70,60)）
+    // 改为精确匹配，先归一化，再查表，避免“11点”被“1点”误匹配
+    const normalized = clockPosition
+      .replace(/(钟方向|钟)/g, '')
+      .trim()
+
+    const angleMap: Record<string, number> = {
+      '12点': -90.0, // 顶部
+      '11点': -120.0, // 左上方
+      '10点': -150.0, // 左上方
+      '9点': 180.0, // 左侧
+      '8点': 150.0, // 左下方
+      '7点': 120.0, // 左下方
+      '6点': 90.0, // 底部
+      '5点': 60.0, // 右下方
+      '4点': 30.0, // 右下方
+      '3点': 0.0, // 右侧
+      '2点': -30.0, // 右上方
+      '1点': -60.0, // 右上方
     }
-    return -90.0 // 默认12点方向
+
+    const angle = angleMap[normalized]
+    if (angle === undefined) {
+      console.warn(`[BreastDiagram] 未知钟点: ${clockPosition} (归一化后: ${normalized})，使用默认12点`)
+      return -90.0 // 默认12点方向
+    }
+    return angle
   }
 
   // 计算钟点位置的坐标（按照layout v2原型）
-  // 左右乳房钟点方向一致，不需要镜像
+  // 钟点方向是相对于每个乳房的乳头位置，左右乳房不需要镜像
   // 必须使用真实的distanceFromNipple数据，不能使用默认值
   const getClockPositionCoords = (
     clockPosition: string,
@@ -68,7 +73,7 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
     }
 
     // 计算坐标（SVG坐标系，Y轴向下）
-    // 左右乳房钟点方向一致，直接使用计算出的坐标，不镜像
+    // 钟点方向是相对于每个乳房的乳头位置，左右乳房不需要镜像
     // x = centerX + r*cos(angle)
     // y = centerY + r*sin(angle)
     const xPos = r * Math.cos(angleRadians)
@@ -191,4 +196,3 @@ export default function BreastDiagram({ findings, selectedId, onSelect }: Breast
     </div>
   )
 }
-
