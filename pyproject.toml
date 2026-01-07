@@ -37,9 +37,25 @@ line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
-# 启用规则: E(pycodestyle), F(pyflakes), I(isort), B(bugbear), UP(pyupgrade)
-select = ["E", "F", "I", "B", "UP"]
-ignore = ["F811","B008"]
+# 启用规则: 基于Google Python Style Guide
+# E(pycodestyle), F(pyflakes), I(isort), B(bugbear), UP(pyupgrade)
+# SIM(flake8-simplify), PIE(flake8-pie), PL(Pylint), TRY(tryceratops), RUF(Ruff特定规则)
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear (常见bug检测)
+    "UP",     # pyupgrade (代码现代化)
+    "SIM",    # flake8-simplify (简化代码)
+    "PIE",    # flake8-pie (代码质量)
+    "PL",     # Pylint规则
+    "TRY",    # tryceratops (异常处理最佳实践)
+    "RUF",    # Ruff特定规则
+]
+ignore = [
+    "F811",   # 允许重复导入（某些场景需要）
+    "B008",   # 允许函数参数默认值
+]
 
 
 # 自动修复 imports 排序
