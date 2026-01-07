@@ -215,6 +215,7 @@ function convertToAnalysisResult(
         risk: (nodule.risk_assessment === 'High' ? 'High' : nodule.risk_assessment === 'Medium' ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
         location: {
           breast: (nodule.location?.breast === 'right' ? 'right' : 'left') as 'left' | 'right',
+          // LLM已标准化：象限转换统一使用4个固定钟点（1、11、5、7），单位已统一为cm
           clockPosition: nodule.location?.clock_position || nodule.location?.clockPosition || '12点',
           distanceFromNipple: parseDistanceFromNipple(nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple),
         },
@@ -373,6 +374,7 @@ function convertToAnalysisResult(
         risk: (nodule.risk_assessment === 'High' ? 'High' : nodule.risk_assessment === 'Medium' ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
         location: {
           breast: (nodule.location?.breast === 'right' ? 'right' : 'left') as 'left' | 'right',
+          // LLM已标准化：象限转换统一使用4个固定钟点（1、11、5、7），单位已统一为cm
           clockPosition: nodule.location?.clock_position || nodule.location?.clockPosition || '12点',
           distanceFromNipple: parseDistanceFromNipple(nodule.location?.distance_from_nipple || nodule.location?.distanceFromNipple),
         },
