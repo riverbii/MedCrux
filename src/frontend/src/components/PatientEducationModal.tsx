@@ -33,19 +33,30 @@ export default function PatientEducationModal({ isOpen, onClose }: PatientEducat
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+          <div className="space-y-6">
+            {/* 介绍说明 - 按照layout v2原型 */}
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-xl">
               <p className="text-sm text-blue-700">
                 <strong>BI-RADS</strong>（Breast Imaging Reporting and Data System）是由美国放射学会（ACR）制定的标准化乳腺影像报告系统。
                 本系统用于标准化描述和评估乳腺影像检查结果。
               </p>
             </div>
 
-            <div className="grid gap-4">
+            {/* BI-RADS分级说明 - 按照layout v2原型，使用网格布局和渐变背景卡片 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {biradsInfo.map((item) => (
-                <div key={item.class} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={item.class} className="bg-gradient-to-br rounded-xl p-4 hover:shadow-md transition-shadow card-hover"
+                  style={{
+                    background: item.class === '0' ? 'linear-gradient(to bottom right, #f3f4f6, #e5e7eb)' :
+                      item.class === '1' || item.class === '2' ? 'linear-gradient(to bottom right, #d1fae5, #a7f3d0)' :
+                      item.class === '3' ? 'linear-gradient(to bottom right, #fef3c7, #fde68a)' :
+                      item.class === '4' ? 'linear-gradient(to bottom right, #fed7aa, #fdba74)' :
+                      item.class === '5' ? 'linear-gradient(to bottom right, #fee2e2, #fecaca)' :
+                      'linear-gradient(to bottom right, #e9d5ff, #ddd6fe)'
+                  }}
+                >
                   <div className="flex items-start gap-4">
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${
+                    <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
                       item.class === '0' ? 'bg-gray-500' :
                       item.class === '1' || item.class === '2' ? 'bg-green-500' :
                       item.class === '3' ? 'bg-yellow-500' :
@@ -56,16 +67,19 @@ export default function PatientEducationModal({ isOpen, onClose }: PatientEducat
                       {item.class}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2">{item.desc}</p>
-                      <p className="text-sm text-purple-600 font-medium">建议：{item.suggestion}</p>
+                      <h3 className="font-semibold text-gray-800 mb-2">{item.title}</h3>
+                      <p className="text-sm text-gray-600 mb-3">{item.desc}</p>
+                      <div className="bg-white/60 rounded-lg px-3 py-2">
+                        <p className="text-sm text-purple-600 font-medium">建议：{item.suggestion}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mt-6">
+            {/* 重要提示 - 按照layout v2原型 */}
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-xl">
               <p className="text-sm text-yellow-700">
                 <strong>重要提示：</strong>BI-RADS 分级仅供参考，不能替代专业医生的诊断。如有任何疑问，请咨询专业医生。
               </p>
@@ -85,5 +99,3 @@ export default function PatientEducationModal({ isOpen, onClose }: PatientEducat
     </div>
   )
 }
-
-
