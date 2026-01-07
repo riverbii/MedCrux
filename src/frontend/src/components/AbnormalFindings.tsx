@@ -103,10 +103,6 @@ export default function AbnormalFindings({
         ) : (
           findings.map((finding) => {
             const isSelected = finding.id === selectedId
-            const riskColor =
-              finding.risk === 'High' ? 'red' :
-              finding.risk === 'Medium' ? 'yellow' :
-              'green'
 
             return (
               <button

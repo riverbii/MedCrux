@@ -35,7 +35,6 @@ export default function AnalysisStatus({ status, progress }: AnalysisStatusProps
         {stages.map((stage, index) => {
           const isActive = index === currentStageIndex
           const isCompleted = index < currentStageIndex
-          const isPending = index > currentStageIndex
 
           return (
             <div
@@ -72,7 +71,7 @@ export default function AnalysisStatus({ status, progress }: AnalysisStatusProps
           )
         })}
       </div>
-      
+
       {/* 进度条 */}
       <div className="mt-4">
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -88,4 +87,3 @@ export default function AnalysisStatus({ status, progress }: AnalysisStatusProps
     </div>
   )
 }
-

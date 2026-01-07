@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import FileUpload from '../components/FileUpload'
 import ImageDisplay from '../components/ImageDisplay'
@@ -6,15 +6,10 @@ import AnalysisStatus from '../components/AnalysisStatus'
 import AbnormalFindings from '../components/AbnormalFindings'
 import OverallAssessment from '../components/OverallAssessment'
 import BreastDiagram from '../components/BreastDiagram'
-import LoadingSpinner from '../components/LoadingSpinner'
 import Disclaimer from '../components/Disclaimer'
 import Footer from '../components/Footer'
 import { AnalysisResult, AnalysisStatus as StatusType } from '../types'
 import { analyzeReport, getHealth } from '../services/api'
-
-// 懒加载模态框组件
-const PatientEducationModal = lazy(() => import('../components/PatientEducationModal'))
-const PrivacyModal = lazy(() => import('../components/PrivacyModal'))
 
 export default function AnalysisPage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -133,7 +128,7 @@ export default function AnalysisPage() {
                     />
                   )}
                 </div>
-                
+
                 {/* 右侧：分析控制区 - 占据5列 */}
                 <div className="col-span-12 lg:col-span-5 flex flex-col justify-between">
                   {/* 分析状态区域 */}
@@ -146,7 +141,7 @@ export default function AnalysisPage() {
                       />
                     </div>
                   </div>
-                  
+
                   {/* 分析按钮 */}
                   <div>
                     <button
@@ -199,7 +194,7 @@ export default function AnalysisPage() {
                     onSelect={setSelectedFindingId}
                   />
                 </div>
-                
+
                 {/* 右侧：异常发现详情 - 9列 */}
                 <div className="col-span-12 lg:col-span-9 flex">
                   <AbnormalFindings
@@ -225,4 +220,3 @@ export default function AnalysisPage() {
     </div>
   )
 }
-

@@ -128,6 +128,11 @@ export interface HealthResponse {
 export interface AnalysisResponse {
   filename: string
   ocr_text: string
+  report_structure?: {
+    findings?: string | null
+    diagnosis?: string | null
+    recommendation?: string | null
+  } | null
   ai_result: {
     nodules?: Array<{
       id: string
@@ -137,6 +142,9 @@ export interface AnalysisResponse {
         breast: 'left' | 'right'
         clock_position: string
         distance_from_nipple?: number
+        // 兼容可能出现的驼峰命名
+        clockPosition?: string
+        distanceFromNipple?: number
       }
       size?: {
         length: number
@@ -151,6 +159,7 @@ export interface AnalysisResponse {
         posterior_features?: string
         calcification?: string
         blood_flow?: string
+        size?: string
       }
       birads_class?: string
       inconsistency_alert?: boolean
@@ -163,6 +172,10 @@ export interface AnalysisResponse {
       highest_risk: 'Low' | 'Medium' | 'High'
       birads?: string
     }
+    ai_risk_assessment?: string
+    error?: string
+    advice?: string
+    birads_class?: string
     _new_format?: {
       nodules: any[]
       overall_assessment: any
@@ -194,7 +207,7 @@ function convertToAnalysisResult(
   // 优先使用新格式
   if (aiResult._new_format) {
     const newFormat = aiResult._new_format
-      const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => {
+    const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => {
       // 解析size字符串（格式：长径×横径×前后径 cm）
       let sizeObj: { length: number; width: number; depth: number } | undefined
       if (nodule.morphology?.size) {
@@ -235,16 +248,16 @@ function convertToAnalysisResult(
       Medium: riskLevels.filter(r => r === 'Medium').length,
       High: riskLevels.filter(r => r === 'High').length,
     }
-    const inconsistencyCount = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0).length
+    const inconsistencyCount = findings.filter(f => (f.inconsistencyAlerts ?? []).length > 0).length
     const inconsistencySummary = findings
-      .filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
-      .map(f => `${f.name}：${f.inconsistencyAlerts.join('；')}`)
+      .filter(f => (f.inconsistencyAlerts ?? []).length > 0)
+      .map(f => `${f.name}：${(f.inconsistencyAlerts ?? []).join('；')}`)
 
     // 生成详细事实摘要（如果LLM返回的不够详细）
     const llmSummary = typeof newFormat.overall_assessment?.summary === 'string'
       ? newFormat.overall_assessment.summary
       : Array.isArray(newFormat.overall_assessment?.summary)
-      ? newFormat.overall_assessment.summary.join(' ')
+      ? (newFormat.overall_assessment.summary as string[]).join(' ')
       : ''
 
     const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
@@ -253,7 +266,7 @@ function convertToAnalysisResult(
     let detailedFacts: string[] = []
     if (summaryIsEmpty || summaryIsInsufficient) {
       // 自动生成详细摘要
-      detailedFacts = findings.map((finding, index) => {
+      detailedFacts = findings.map((finding) => {
         const parts: string[] = []
         parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
 
@@ -293,7 +306,7 @@ function convertToAnalysisResult(
 
     // 计算一致性校验结果
     const consistentFindings = findings.filter(f => !f.inconsistencyAlerts || f.inconsistencyAlerts.length === 0)
-    const inconsistentFindings = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
+    const inconsistentFindings = findings.filter(f => (f.inconsistencyAlerts ?? []).length > 0)
 
     const consistencyCheck = {
       status: (inconsistentFindings.length > 0 ? 'has_inconsistency' : 'all_consistent') as 'all_consistent' | 'has_inconsistency',
@@ -302,7 +315,7 @@ function convertToAnalysisResult(
       inconsistentDetails: inconsistentFindings.map(f => ({
         findingName: f.name,
         originalBirads: f.birads || '未分类',
-        reasons: f.inconsistencyAlerts || [],
+        reasons: f.inconsistencyAlerts ?? [],
       })),
       consistentDetails: consistentFindings.map(f => ({
         findingName: f.name,
@@ -394,16 +407,16 @@ function convertToAnalysisResult(
       Medium: riskLevels.filter(r => r === 'Medium').length,
       High: riskLevels.filter(r => r === 'High').length,
     }
-    const inconsistencyCount = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0).length
+    const inconsistencyCount = findings.filter(f => (f.inconsistencyAlerts ?? []).length > 0).length
     const inconsistencySummary = findings
-      .filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
-      .map(f => `${f.name}：${f.inconsistencyAlerts.join('；')}`)
+      .filter(f => (f.inconsistencyAlerts ?? []).length > 0)
+      .map(f => `${f.name}：${(f.inconsistencyAlerts ?? []).join('；')}`)
 
     // 生成详细事实摘要
     const llmSummary = typeof aiResult.overall_assessment?.summary === 'string'
       ? aiResult.overall_assessment.summary
       : Array.isArray(aiResult.overall_assessment?.summary)
-      ? aiResult.overall_assessment.summary.join(' ')
+      ? (aiResult.overall_assessment.summary as string[]).join(' ')
       : ''
 
     const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
@@ -411,7 +424,7 @@ function convertToAnalysisResult(
 
     let detailedFacts: string[] = []
     if (summaryIsEmpty || summaryIsInsufficient) {
-      detailedFacts = findings.map((finding, index) => {
+      detailedFacts = findings.map((finding) => {
         const parts: string[] = []
         parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
 
@@ -450,7 +463,7 @@ function convertToAnalysisResult(
 
     // 计算一致性校验结果（旧格式）
     const consistentFindings = findings.filter(f => !f.inconsistencyAlerts || f.inconsistencyAlerts.length === 0)
-    const inconsistentFindings = findings.filter(f => f.inconsistencyAlerts && f.inconsistencyAlerts.length > 0)
+    const inconsistentFindings = findings.filter(f => (f.inconsistencyAlerts ?? []).length > 0)
 
     const consistencyCheck = {
       status: (inconsistentFindings.length > 0 ? 'has_inconsistency' : 'all_consistent') as 'all_consistent' | 'has_inconsistency',
@@ -459,7 +472,7 @@ function convertToAnalysisResult(
       inconsistentDetails: inconsistentFindings.map(f => ({
         findingName: f.name,
         originalBirads: f.birads || '未分类',
-        reasons: f.inconsistencyAlerts || [],
+        reasons: f.inconsistencyAlerts ?? [],
       })),
       consistentDetails: consistentFindings.map(f => ({
         findingName: f.name,
