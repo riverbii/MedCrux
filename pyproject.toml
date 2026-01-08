@@ -28,6 +28,7 @@ packages = ["src/medcrux"]
 dev = [
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
+    "pytest-cov>=5.0.0",
     "ruff>=0.14.10",
 ]
 
@@ -65,3 +66,29 @@ known-first-party = ["medcrux"]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+# --- Coverage Configuration ---
+[tool.coverage.run]
+source = ["src/medcrux"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "if False:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+precision = 2
+show_missing = true
+skip_covered = false
