@@ -19,6 +19,8 @@ from medcrux.analysis.llm_engine import (analyze_birads_independently,
                                          check_consistency_sets)
 from medcrux.analysis.report_structure_parser import (extract_doctor_birads,
                                                       parse_report_structure)
+from medcrux.analysis.risk_sign_identifier import (aggregate_risk_signs,
+                                                   identify_risk_signs)
 from medcrux.ingestion.ocr_service import extract_text_from_bytes
 from medcrux.utils.logger import log_error_with_context, setup_logger
 
@@ -373,7 +375,7 @@ async def analyze_report(file: UploadFile = File(...)):
                 # 匹配原始nodule
                 matched_original = _match_nodule_by_id_or_location(llm_nodule, original_nodules)
                 
-                # 合并数据
+                # 合并数据（参数顺序：original_nodule, llm_nodule）
                 standardized_nodule = _merge_nodule_data(matched_original, llm_nodule)
                 standardized_nodules.append(standardized_nodule)
             
@@ -385,6 +387,36 @@ async def analyze_report(file: UploadFile = File(...)):
                 if "overall_assessment" not in ai_analysis:
                     ai_analysis["overall_assessment"] = {}
                 # 可以在这里更新overall_assessment中的highest_risk等信息
+        
+        # 5.9. 风险征兆识别（BL-010新增）
+        # 为每个异常发现识别风险征兆
+        if ai_analysis.get("nodules"):
+            try:
+                logger.info("开始风险征兆识别")
+                findings_text = report_structure.get("findings", "") if report_structure else ""
+                
+                for nodule in ai_analysis["nodules"]:
+                    morphology = nodule.get("morphology", {})
+                    risk_signs = identify_risk_signs(morphology, findings_text)
+                    if risk_signs:
+                        nodule["risk_signs"] = risk_signs
+                        logger.debug(f"异常发现 {nodule.get('id', 'unknown')} 识别到 {len(risk_signs)} 个风险征兆")
+                
+                # 汇总所有风险征兆
+                risk_signs_summary = aggregate_risk_signs(ai_analysis["nodules"])
+                if risk_signs_summary["strong_evidence"] or risk_signs_summary["weak_evidence"]:
+                    if "overall_assessment" not in ai_analysis:
+                        ai_analysis["overall_assessment"] = {}
+                    ai_analysis["overall_assessment"]["risk_signs_summary"] = risk_signs_summary
+                    logger.info(
+                        f"风险征兆汇总完成: 强证据={len(risk_signs_summary['strong_evidence'])}, "
+                        f"弱证据={len(risk_signs_summary['weak_evidence'])}"
+                    )
+            except Exception as e:
+                log_error_with_context(
+                    logger, e, context={"step": "风险征兆识别", **context}, operation="风险征兆识别"
+                )
+                logger.warning("风险征兆识别失败，将继续处理")
         
         # 添加BL-009相关结果
         if assessment_urgency:
@@ -443,7 +475,7 @@ async def analyze_report(file: UploadFile = File(...)):
                 "inconsistency_alert": first_nodule.get("inconsistency_alert", False),
                 "inconsistency_reasons": first_nodule.get("inconsistency_reasons", []),
                 "advice": overall_assessment.get("advice", ""),
-                # 保留新格式数据，供阶段2使用
+                # 保留新格式数据，供阶段2使用（包含风险征兆数据）
                 "_new_format": new_result,
                 # 添加报告结构解析结果（如果可用）
                 "_report_structure": report_structure,

@@ -316,6 +316,20 @@ function convertToAnalysisResult(
         morphology: nodule.morphology,
         birads: nodule.birads_class,
         inconsistencyAlerts: nodule.inconsistency_reasons || [],
+        // BL-010新增：风险征兆
+        riskSigns: nodule.risk_signs ? nodule.risk_signs.map((rs: any) => {
+          // 验证evidence_level值
+          const evidenceLevel = rs.evidence_level === 'strong' ? 'strong' : rs.evidence_level === 'weak' ? 'weak' : 'weak'
+          if (rs.evidence_level !== 'strong' && rs.evidence_level !== 'weak') {
+            console.warn(`Unexpected evidence_level value: ${rs.evidence_level}, defaulting to 'weak'`)
+          }
+          return {
+            sign: rs.sign,
+            evidenceLevel,
+            evidenceSource: rs.evidence_source,
+            suggestion: rs.suggestion,
+          }
+        }) : undefined,
       }
     })
 
@@ -441,6 +455,11 @@ function convertToAnalysisResult(
       consistencyBasedRisk,
       assessmentUrgency,
       consistencyCheckNew,
+      // BL-010新增：风险征兆汇总
+      riskSignsSummary: newFormat.overall_assessment?.risk_signs_summary ? {
+        strongEvidence: newFormat.overall_assessment.risk_signs_summary.strong_evidence || [],
+        weakEvidence: newFormat.overall_assessment.risk_signs_summary.weak_evidence || [],
+      } : undefined,
     }
 
     return { findings, overallAssessment }

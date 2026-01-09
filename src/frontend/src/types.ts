@@ -23,6 +23,13 @@ export interface AbnormalFinding {
   }
   birads?: string
   inconsistencyAlerts?: string[]
+  // BL-010新增：风险征兆
+  riskSigns?: Array<{
+    sign: string
+    evidenceLevel: 'strong' | 'weak'
+    evidenceSource: string
+    suggestion: string
+  }>
 }
 
 export interface OverallAssessment {
@@ -90,6 +97,19 @@ export interface OverallAssessment {
     missingInAi: string[]
     extraInAi: string[]
     description: string
+  }
+  // BL-010新增：风险征兆汇总
+  riskSignsSummary?: {
+    strongEvidence: Array<{
+      sign: string
+      evidenceSource: string
+      suggestion: string
+    }>
+    weakEvidence: Array<{
+      sign: string
+      evidenceSource: string
+      suggestion: string
+    }>
   }
 }
 

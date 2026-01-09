@@ -56,7 +56,7 @@ export default function AbnormalFindings({
               <div className="text-xs text-gray-600 mb-1">大小</div>
               <div className="text-sm font-semibold text-gray-800">
                 {selectedFinding.size.length}×{selectedFinding.size.width}
-                {selectedFinding.size.depth > 0 ? `×${selectedFinding.size.depth}` : ''} cm
+                {selectedFinding.size.depth !== undefined && selectedFinding.size.depth > 0 ? `×${selectedFinding.size.depth}` : ''} cm
               </div>
             </div>
           )}
@@ -89,6 +89,64 @@ export default function AbnormalFindings({
             </div>
           </div>
         )}
+
+        {/* 风险征兆区域 - BL-010新增 */}
+        <div className="mt-6 relative z-10" style={{ overflow: 'visible' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl">⚠️</span>
+            <h4 className="text-lg font-semibold text-gray-800">风险征兆</h4>
+            <span className="text-xs text-gray-500">（基于形态学特征识别）</span>
+          </div>
+
+          {selectedFinding.riskSigns && selectedFinding.riskSigns.length > 0 ? (
+            <div className="space-y-2 relative" style={{ overflow: 'visible' }}>
+              {selectedFinding.riskSigns.map((riskSign, index) => (
+                <div key={index} className="relative group">
+                  {/* 列表项 */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between hover:bg-gray-100 hover:border-gray-300 transition-colors cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">
+                        {riskSign.evidenceLevel === 'strong' ? '🔴' : riskSign.evidenceLevel === 'weak' ? '🟡' : '⚪'}
+                      </span>
+                      <span className="font-semibold text-gray-800">{riskSign.sign}</span>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                        riskSign.evidenceLevel === 'strong'
+                          ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm'
+                          : riskSign.evidenceLevel === 'weak'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <span>{riskSign.evidenceLevel === 'strong' ? '✅' : riskSign.evidenceLevel === 'weak' ? '⚠️' : '❓'}</span>
+                      <span>{riskSign.evidenceLevel === 'strong' ? '强证据' : riskSign.evidenceLevel === 'weak' ? '弱证据' : '未知'}</span>
+                    </span>
+                  </div>
+
+                  {/* 详细信息卡片（hover显示） */}
+                  <div className="hidden group-hover:block absolute left-0 top-full mt-2 w-80 glass rounded-xl shadow-elegant p-4 risk-sign-hover-card z-[10000]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm">{riskSign.evidenceLevel === 'strong' ? '📚' : '📋'}</span>
+                      <span className="text-sm text-gray-600">证据来源：</span>
+                      <span className="text-sm font-medium text-gray-800">{riskSign.evidenceSource}</span>
+                    </div>
+                    <div className="pt-2 border-t border-gray-200">
+                      <div className="flex items-start gap-2">
+                        <span>💡</span>
+                        <span className="text-sm text-gray-700">建议：{riskSign.suggestion}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+              <div className="text-sm text-gray-600">当前异常发现未识别到风险征兆</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
