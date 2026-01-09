@@ -149,6 +149,91 @@ api_key = os.getenv("DEEPSEEK_API_KEY")
 client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com") if api_key else None
 
 
+def extract_doctor_birads(diagnosis_text: str) -> dict:
+    """
+    从diagnosis文本中提取原报告的BI-RADS分类集合和最高值
+    
+    Args:
+        diagnosis_text: 影像学诊断文本（例如："超声提示：左侧乳腺低回声结节，BI-RADS 3类；右侧乳腺囊性结节，BI-RADS 2类。"）
+    
+    Returns:
+        {
+            "birads_set": set,  # BI-RADS分类集合（去重）
+            "birads_list": list,  # BI-RADS分类列表（保留顺序）
+            "highest_birads": str,  # 最高BI-RADS分类
+            "diagnosis_text": str  # 原始diagnosis文本
+        }
+    
+    支持格式：
+    - "BI-RADS 3类"
+    - "BI-RADS 2类和3类"
+    - "BI-RADS 3类、4类"
+    - "BI-RADS 3类；BI-RADS 4类"
+    """
+    if not diagnosis_text:
+        return {
+            "birads_set": set(),
+            "birads_list": [],
+            "highest_birads": None,
+            "diagnosis_text": diagnosis_text,
+        }
+
+    # 匹配BI-RADS分类（支持数字和字母后缀，如"3"、"4A"、"4B"、"4C"）
+    # 支持多种格式：BI-RADS 3类、BI-RADS 3、bi-rads 3类等
+    # 支持省略格式：BI-RADS 3类、4类（第二个分类省略了"BI-RADS"）
+    pattern = r"BI-RADS\s+(\d+[ABC]?)\s*类?(?:\s*[、，,]\s*(\d+[ABC]?)\s*类?)*"
+    all_matches = re.findall(pattern, diagnosis_text, re.IGNORECASE)
+    
+    # 展开匹配结果（第一个是主匹配，后续是可选匹配）
+    matches = []
+    for match in all_matches:
+        if isinstance(match, tuple):
+            # 展开元组：第一个是主匹配，后续是可选匹配
+            matches.append(match[0])
+            for item in match[1:]:
+                if item:
+                    matches.append(item)
+        else:
+            matches.append(match)
+    
+    # 如果使用复杂正则没有匹配到，回退到简单正则
+    if not matches:
+        pattern_simple = r"BI-RADS\s+(\d+[ABC]?)\s*类?"
+        matches = re.findall(pattern_simple, diagnosis_text, re.IGNORECASE)
+
+    if not matches:
+        logger.warning(f"无法从diagnosis文本中提取BI-RADS分类: {diagnosis_text[:100]}")
+        return {
+            "birads_set": set(),
+            "birads_list": [],
+            "highest_birads": None,
+            "diagnosis_text": diagnosis_text,
+        }
+
+    # 转换为数字进行比较（忽略字母后缀）
+    birads_list = list(matches)
+    birads_set = set(matches)
+
+    # 提取最高BI-RADS分类（比较数字部分）
+    try:
+        highest_birads = max(matches, key=lambda x: int(re.match(r"\d+", x).group()))
+    except (ValueError, AttributeError) as e:
+        logger.error(f"提取最高BI-RADS分类失败: {e}, matches: {matches}")
+        highest_birads = matches[0] if matches else None
+
+    logger.info(
+        f"从diagnosis提取BI-RADS分类成功: 集合={birads_set}, 最高={highest_birads}, "
+        f"原始文本长度={len(diagnosis_text)}"
+    )
+
+    return {
+        "birads_set": birads_set,
+        "birads_list": birads_list,
+        "highest_birads": highest_birads,
+        "diagnosis_text": diagnosis_text,
+    }
+
+
 def parse_report_structure(ocr_text: str) -> dict:
     """
     解析OCR文本，识别报告的各个部分

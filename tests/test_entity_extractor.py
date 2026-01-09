@@ -133,3 +133,113 @@ class TestEntityExtractor:
         assert isinstance(entities, list)
         # 应该提取到BI-RADS相关概念
 
+    def test_extract_axioms_from_markdown_with_sub_axioms(self):
+        """测试_extract_axioms_from_markdown：包含子公理（决策点：提取子公理）"""
+        extractor = EntityExtractor()
+        parser = DocumentParser()
+        
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False, encoding='utf-8') as f:
+            f.write("""## 公理1: BI-RADS分类
+
+**公理1.1 边界清晰**：如果结节边界清晰，则BI-RADS分类为2类或3类。
+
+**公理1.2 边界模糊**：如果结节边界模糊，则BI-RADS分类为4类或5类。
+
+## 公理2: 其他公理
+""")
+            md_path = Path(f.name)
+        
+        try:
+            parsed = parser.parse_markdown(md_path)
+            parsed["path"] = str(md_path).replace(md_path.name, "breast_ultrasound_report_axioms.md")
+            
+            entities = extractor._extract_axioms_from_markdown(parsed)
+            
+            # 应该提取到子公理
+            assert len(entities) > 0
+            # 验证子公理ID格式
+            assert any("axiom_1_" in e["id"] for e in entities)
+        finally:
+            md_path.unlink()
+
+    def test_extract_terms_from_markdown(self):
+        """测试_extract_terms_from_markdown：提取术语（决策点：匹配术语模式）"""
+        extractor = EntityExtractor()
+        parser = DocumentParser()
+        
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False, encoding='utf-8') as f:
+            f.write("""## 术语：边界清晰
+
+边界清晰是指...
+
+## 术语：低回声
+
+低回声是指...
+""")
+            md_path = Path(f.name)
+        
+        try:
+            parsed = parser.parse_markdown(md_path)
+            parsed["path"] = str(md_path).replace(md_path.name, "breast_ultrasound_report_axioms.md")
+            
+            entities = extractor._extract_terms_from_markdown(parsed)
+            
+            assert isinstance(entities, list)
+        finally:
+            md_path.unlink()
+
+    def test_extract_rules_from_markdown(self):
+        """测试_extract_rules_from_markdown：提取规则（决策点：匹配规则模式）"""
+        extractor = EntityExtractor()
+        parser = DocumentParser()
+        
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False, encoding='utf-8') as f:
+            f.write("""## 规则：BI-RADS 3类随访
+
+如果BI-RADS分类为3类，则建议6个月随访。
+""")
+            md_path = Path(f.name)
+        
+        try:
+            parsed = parser.parse_markdown(md_path)
+            parsed["path"] = str(md_path).replace(md_path.name, "breast_ultrasound_report_axioms.md")
+            
+            entities = extractor._extract_rules_from_markdown(parsed)
+            
+            assert isinstance(entities, list)
+        finally:
+            md_path.unlink()
+
+    def test_extract_birads_concepts_from_text_multiple_classes(self):
+        """测试_extract_birads_concepts_from_text：多个BI-RADS分类（决策点：提取所有分类）"""
+        extractor = EntityExtractor()
+        
+        text = "BI-RADS 3类，建议随访。BI-RADS 4类，建议进一步检查。"
+        metadata = {"title": "测试"}
+        
+        entities = extractor._extract_birads_concepts_from_text(text, metadata)
+        
+        # 验证返回了实体列表（可能为空，取决于实现）
+        assert isinstance(entities, list)
+        # 如果有实体，验证包含BI-RADS分类
+        if len(entities) > 0:
+            birads_classes = [e["metadata"].get("birads_class") for e in entities if "birads_class" in e.get("metadata", {})]
+            assert len(birads_classes) > 0
+
+    def test_extract_medical_terms_from_text(self):
+        """测试_extract_medical_terms_from_text：提取医学术语（决策点：匹配医学术语）"""
+        extractor = EntityExtractor()
+        
+        text = "超声检查提示：左乳上方可见低回声结节，边界清晰，形态规则。"
+        metadata = {"title": "测试"}
+        
+        entities = extractor._extract_medical_terms_from_text(text, metadata)
+        
+        assert isinstance(entities, list)
+

@@ -10,10 +10,16 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
   const factualSummary = assessment.originalReport?.factualSummary
   const conclusion = assessment.originalReport?.conclusion
 
-  // 卡片2：一致性校验结果
+  // 卡片2：一致性校验结果（原有：形态学特征一致性检查）
   const consistencyCheck = assessment.consistencyCheck
 
-  // 卡片3：风险评估
+  // 卡片2.5：一致性校验结果（BL-009新增：报告分类结果和AI分类结果的一致性）
+  const consistencyCheckNew = assessment.consistencyCheckNew
+
+  // 卡片3：评估紧急程度（BL-009新增）
+  const assessmentUrgency = assessment.assessmentUrgency
+
+  // 卡片4：风险评估（原有：基于一致性校验的风险评估）
   const consistencyBasedRisk = assessment.consistencyBasedRisk
 
   return (
@@ -136,10 +142,118 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
           </div>
         )}
 
-        {/* 卡片3：风险评估 */}
+        {/* 卡片2.5：一致性校验结果（BL-009新增：报告分类结果和AI分类结果的一致性） */}
+        {consistencyCheckNew && (
+          <div>
+            <div className="text-sm font-semibold text-gray-600 mb-3">一致性校验结果（报告分类结果和AI分类结果的一致性）</div>
+            <div
+              className={`rounded-xl p-6 text-white ${
+                consistencyCheckNew.consistent
+                  ? 'bg-gradient-to-r from-green-500 to-green-600'
+                  : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+              }`}
+            >
+              <div className="flex items-center space-x-2 mb-3">
+                <span className="text-2xl">
+                  {consistencyCheckNew.consistent ? '✅' : '⚠️'}
+                </span>
+                <div className="text-xl font-bold">
+                  {consistencyCheckNew.consistent ? '分类结果一致' : '分类结果不一致'}
+                </div>
+              </div>
+              <div className="text-sm opacity-90 mb-4">
+                {consistencyCheckNew.description}
+              </div>
+              <div className="bg-white/20 rounded-lg p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs font-semibold mb-1">报告BI-RADS分类集合：</div>
+                    <div className="text-sm">
+                      {consistencyCheckNew.reportBiradsSet.length > 0
+                        ? `{${consistencyCheckNew.reportBiradsSet.sort().join(', ')}}`
+                        : '无'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold mb-1">AI BI-RADS分类集合：</div>
+                    <div className="text-sm">
+                      {consistencyCheckNew.aiBiradsSet.length > 0
+                        ? `{${consistencyCheckNew.aiBiradsSet.sort().join(', ')}}`
+                        : '无'}
+                    </div>
+                  </div>
+                </div>
+                {(consistencyCheckNew.missingInAi.length > 0 || consistencyCheckNew.extraInAi.length > 0) && (
+                  <div className="border-t border-white/30 pt-3 space-y-2">
+                    {consistencyCheckNew.missingInAi.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold mb-1">AI缺少的分类：</div>
+                        <div className="text-sm">
+                          {consistencyCheckNew.missingInAi.sort().join(', ')}
+                        </div>
+                      </div>
+                    )}
+                    {consistencyCheckNew.extraInAi.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold mb-1">AI额外的分类：</div>
+                        <div className="text-sm">
+                          {consistencyCheckNew.extraInAi.sort().join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 卡片3：评估紧急程度（BL-009新增） */}
+        {assessmentUrgency && (
+          <div>
+            <div className="text-sm font-semibold text-gray-600 mb-3">
+              评估紧急程度
+              <span className="text-xs text-gray-500 ml-2 font-normal">（当医生给出了更低的风险评级，而患者实际的风险评级更高）</span>
+            </div>
+            <div
+              className={`rounded-xl p-6 text-white ${
+                assessmentUrgency.urgencyLevel === 'High'
+                  ? 'bg-gradient-to-r from-red-500 to-red-600'
+                  : assessmentUrgency.urgencyLevel === 'Medium'
+                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                  : 'bg-gradient-to-r from-green-500 to-green-600'
+              }`}
+            >
+              <div className="text-2xl font-bold mb-2">
+                评估紧急程度：{assessmentUrgency.urgencyLevel}
+              </div>
+              <div className="text-sm opacity-90 mb-3">{assessmentUrgency.reason}</div>
+              <div className="bg-white/20 rounded-lg p-4 mt-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-xs font-semibold mb-1 opacity-75">医生最高BI-RADS分类：</div>
+                    <div className="text-lg font-bold">{assessmentUrgency.doctorHighestBirads}类</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold mb-1 opacity-75">AI最高BI-RADS分类：</div>
+                    <div className="text-lg font-bold">{assessmentUrgency.llmHighestBirads}类</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-xs opacity-75 border-t border-white/30 pt-3 mt-3">
+                这是基于报告文本的提示，不是医疗诊断。所有分析结果仅供参考，不能替代专业医生的诊断和治疗建议。
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 卡片4：风险评估（原有：基于一致性校验的风险评估） */}
         {consistencyBasedRisk && (
           <div>
-            <div className="text-sm font-semibold text-gray-600 mb-3">风险评估</div>
+            <div className="text-sm font-semibold text-gray-600 mb-3">
+              风险评估
+              <span className="text-xs text-gray-500 ml-2 font-normal">（基于报告描述的特征，提示需要进一步评估的紧急程度）</span>
+            </div>
             <div
               className={`rounded-xl p-6 text-white ${
                 consistencyBasedRisk.level === 'High'
@@ -150,14 +264,17 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
               }`}
             >
               <div className="text-2xl font-bold mb-2">
-                基于一致性校验的风险等级：{consistencyBasedRisk.level === 'High' ? 'High' : consistencyBasedRisk.level === 'Medium' ? 'Medium' : 'Low'}
+                评估紧急程度：{consistencyBasedRisk.level === 'High' ? 'High' : consistencyBasedRisk.level === 'Medium' ? 'Medium' : 'Low'}
               </div>
-              <div className="text-sm opacity-90">{consistencyBasedRisk.description}</div>
+              <div className="text-sm opacity-90 mb-3">{consistencyBasedRisk.description}</div>
+              <div className="text-xs opacity-75 border-t border-white/30 pt-3 mt-3">
+                这是基于报告文本的提示，不是医疗诊断。所有分析结果仅供参考，不能替代专业医生的诊断和治疗建议。
+              </div>
             </div>
           </div>
         )}
 
-        {/* 卡片4：综合建议 */}
+        {/* 卡片5：综合建议 */}
         {(assessment.advice || assessment.suggestions?.length > 0) && (
           <div>
             <div className="text-sm font-semibold text-gray-600 mb-3">综合建议</div>
@@ -165,7 +282,7 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
               <ul className="text-sm text-gray-700 leading-relaxed space-y-2">
                 {consistencyCheck?.inconsistentDetails && consistencyCheck.inconsistentDetails.length > 0 && (
                   <li>
-                    • 对不一致的异常发现，<strong>建议重新评估BI-RADS分类</strong>，原报告分类可能不准确。
+                    • 对不一致的异常发现，<strong>建议咨询专业医生确认BI-RADS分类</strong>，原报告分类可能不准确。这是基于报告文本的提示，不是医疗诊断。
                   </li>
                 )}
                 {consistencyCheck?.status === 'has_inconsistency' && (

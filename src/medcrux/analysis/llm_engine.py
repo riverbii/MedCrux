@@ -12,6 +12,7 @@ LLM分析引擎模块：使用DeepSeek进行医学逻辑分析
 
 import json
 import os
+import re
 import time
 
 from openai import OpenAI
@@ -465,6 +466,375 @@ def analyze_text_with_deepseek(ocr_text: str) -> dict:
             "advice": "无法连接 AI 大脑进行分析，请检查网络或 Key 配置。",
             "details": str(e),
         }
+
+
+def analyze_birads_independently(factual_text: str) -> dict:
+    """
+    基于事实性描述（检查所见）独立判断BI-RADS分类
+    
+    Args:
+        factual_text: 仅事实性描述（检查所见），不包含影像学诊断和建议
+    
+    Returns:
+        {
+            "nodules": [
+                {
+                    "id": "nodule_1",
+                    "location": {...},
+                    "morphology": {...},
+                    "llm_birads_class": "4",
+                    "llm_birads_reasoning": "判断理由"
+                }
+            ],
+            "llm_highest_birads": "4"
+        }
+    
+    重要规则：
+    1. 只基于事实性描述（检查所见）判断，不要参考任何结论性内容
+    2. 必须识别所有异常发现，为每个异常发现提取完整信息
+    3. 基于公理体系、知识图谱和形态学特征独立判断BI-RADS分类
+    4. 必须提供判断理由
+    """
+    if not factual_text or len(factual_text.strip()) < 10:
+        logger.warning("事实性描述文本为空或过短")
+        return {
+            "nodules": [],
+            "llm_highest_birads": None,
+        }
+
+    # 1. RAG检索：从知识图谱中检索相关知识
+    rag_context = ""
+    rag_start_time = time.time()
+    try:
+        retriever = _get_retriever()
+        retrieval_result = retriever.retrieve(factual_text)
+        rag_time = time.time() - rag_start_time
+
+        if retrieval_result["entities"]:
+            rag_context = "\n\n## 相关医学知识（来自RAG知识库）：\n\n"
+            rag_context += "### 相关医学概念和规则：\n"
+            for entity in retrieval_result["entities"][:5]:
+                entity_name = entity.get("name", "")
+                entity_content = entity.get("content", "")
+                if entity_name and entity_content:
+                    rag_context += f"- **{entity_name}**：{entity_content[:150]}...\n"
+
+            if retrieval_result["inference_paths"]:
+                rag_context += "\n### 逻辑推理路径：\n"
+                for path in retrieval_result["inference_paths"][:3]:
+                    rag_context += f"- {' → '.join(path)}\n"
+
+            logger.info(f"RAG检索完成：{len(retrieval_result['entities'])} 个实体，耗时：{rag_time:.2f}秒")
+        else:
+            logger.warning(f"RAG检索未找到相关知识，耗时：{rag_time:.2f}秒")
+    except Exception as e:
+        rag_time = time.time() - rag_start_time
+        log_error_with_context(logger, e, context={"factual_text_length": len(factual_text)}, operation="RAG检索")
+        logger.warning(f"RAG检索失败，耗时：{rag_time:.2f}秒，继续执行LLM分析")
+
+    # 2. 构建System Prompt
+    system_prompt = (
+        """你是MedCrux医学影像分析助手，基于事实性描述（检查所见）识别异常发现并独立判断BI-RADS分类。
+
+重要规则：
+1. **只基于事实性描述（检查所见）判断**，不要参考任何结论性内容（如影像学诊断、建议等）
+2. **必须识别所有异常发现**，为每个异常发现提取完整信息（位置、形态学特征）
+3. **基于公理体系、知识图谱和形态学特征独立判断BI-RADS分类**
+4. **必须提供判断理由**，说明为什么判断为该BI-RADS分类
+
+步骤：
+1. **识别所有异常发现**：
+   - 仔细阅读事实性描述，识别所有提到的异常发现
+   - 为每个异常发现分配唯一ID（nodule_1, nodule_2等）
+
+2. **提取每个异常发现的信息**：
+   - 位置信息（breast、clock_position、distance_from_nipple等）
+   - 形态学特征（shape、boundary、echo、orientation、size等）
+
+3. **独立判断BI-RADS分类**：
+   - 基于形态学特征、公理体系、知识图谱独立判断BI-RADS分类
+   - 不要参考原报告的BI-RADS分类
+   - 必须提供判断理由（llm_birads_reasoning）
+
+4. **提取最高BI-RADS分类**：
+   - 从所有异常发现中提取最高BI-RADS分类
+
+返回JSON格式（无markdown）：
+{
+    "nodules": [
+        {
+            "id": "nodule_1",
+            "location": {
+                "breast": "left/right",
+                "clock_position": "X点",
+                "distance_from_nipple": "X.X"
+            },
+            "morphology": {
+                "shape": "椭圆形/圆形/不规则形",
+                "boundary": "清晰/大部分清晰/模糊/成角/微小分叶/毛刺状",
+                "echo": "均匀低回声/不均匀回声/无回声/等回声/高回声/复合回声",
+                "orientation": "平行/不平行",
+                "size": "长径×横径×前后径 cm"
+            },
+            "llm_birads_class": "3",
+            "llm_birads_reasoning": "基于形态学特征（椭圆形、边界清晰、均匀低回声、平行方位）判断为3类"
+        }
+    ],
+    "llm_highest_birads": "3"
+}
+
+要求：
+- 必须识别所有异常发现，不能遗漏
+- 必须为每个异常发现提供BI-RADS分类和判断理由
+- 判断理由必须基于形态学特征和公理体系
+- 如果报告中没有异常发现，返回空列表：{"nodules": [], "llm_highest_birads": null}"""
+        + rag_context
+    )
+
+    # 3. 调用 API
+    context = {"factual_text_length": len(factual_text)}
+    logger.debug(f"开始调用DeepSeek API进行独立BI-RADS判断 [文本长度: {len(factual_text)}]")
+
+    llm_start_time = time.time()
+    try:
+        if not api_key:
+            raise ValueError("DEEPSEEK_API_KEY未设置")
+
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": f"这是检查所见（事实性描述），请识别所有异常发现并独立判断BI-RADS分类：\n\n{factual_text}",
+                },
+            ],
+            temperature=0.1,
+            stream=False,
+            response_format={"type": "json_object"},
+        )
+
+        llm_api_time = time.time() - llm_start_time
+        logger.debug(f"DeepSeek API调用成功，耗时：{llm_api_time:.2f}秒")
+
+        # 4. 解析结果
+        content = response.choices[0].message.content
+        result = json.loads(content)
+
+        # 5. 提取最高BI-RADS分类
+        nodules = result.get("nodules", [])
+        llm_highest_birads = result.get("llm_highest_birads")
+        
+        # 如果没有提供llm_highest_birads，从nodules中提取
+        if not llm_highest_birads and nodules:
+            birads_classes = []
+            for nodule in nodules:
+                birads_class = nodule.get("llm_birads_class")
+                if birads_class:
+                    try:
+                        # 提取数字部分
+                        birads_num = int(re.match(r"\d+", birads_class).group())
+                        birads_classes.append((birads_num, birads_class))
+                    except (ValueError, AttributeError):
+                        pass
+            
+            if birads_classes:
+                llm_highest_birads = max(birads_classes, key=lambda x: x[0])[1]
+                result["llm_highest_birads"] = llm_highest_birads
+
+        total_time = time.time() - llm_start_time
+        nodules_count = len(nodules)
+        logger.info(
+            f"独立BI-RADS判断完成 [异常发现数: {nodules_count}, "
+            f"最高BI-RADS: {llm_highest_birads}, 总耗时: {total_time:.2f}秒]"
+        )
+        
+        return result
+
+    except json.JSONDecodeError as e:
+        log_error_with_context(logger, e, context=context, operation="独立BI-RADS判断结果解析")
+        return {
+            "nodules": [],
+            "llm_highest_birads": None,
+            "error": "AI分析结果解析失败",
+        }
+    except Exception as e:
+        log_error_with_context(logger, e, context=context, operation="DeepSeek API调用（独立BI-RADS判断）")
+        return {
+            "nodules": [],
+            "llm_highest_birads": None,
+            "error": f"无法连接 AI 进行分析：{str(e)}",
+        }
+
+
+def check_consistency_sets(original_birads_set: set, llm_birads_set: set) -> dict:
+    """
+    检查报告分类结果和AI分类结果的一致性
+    
+    Args:
+        original_birads_set: 原报告的BI-RADS分类集合（例如：{"2", "3"}）
+        llm_birads_set: AI判断的BI-RADS分类集合（例如：{"2", "3", "4"}）
+    
+    Returns:
+        {
+            "consistent": bool,  # 是否一致
+            "report_birads_set": set,  # 原报告的BI-RADS分类集合
+            "ai_birads_set": set,  # AI判断的BI-RADS分类集合
+            "missing_in_ai": set,  # AI缺少的分类
+            "extra_in_ai": set,  # AI额外的分类
+            "description": str  # 一致性说明
+        }
+    
+    逻辑：
+    - 如果报告说有3类和2类（但没有注明有几个），而AI的分类结果也有3类和2类，就算"一致的"
+    - 如果AI的分类结果包含报告中的所有分类，且没有额外的更高风险分类，也算"一致的"
+    - 如果AI的分类结果缺少报告中的某些分类，或包含报告中没有的更高风险分类，则算"不一致的"
+    """
+    if not original_birads_set and not llm_birads_set:
+        return {
+            "consistent": True,
+            "report_birads_set": set(),
+            "ai_birads_set": set(),
+            "missing_in_ai": set(),
+            "extra_in_ai": set(),
+            "description": "报告和AI都没有BI-RADS分类",
+        }
+
+    if not original_birads_set:
+        return {
+            "consistent": False,
+            "report_birads_set": set(),
+            "ai_birads_set": llm_birads_set,
+            "missing_in_ai": set(),
+            "extra_in_ai": llm_birads_set,
+            "description": f"报告没有BI-RADS分类，AI判断有：{sorted(llm_birads_set)}",
+        }
+
+    if not llm_birads_set:
+        return {
+            "consistent": False,
+            "report_birads_set": original_birads_set,
+            "ai_birads_set": set(),
+            "missing_in_ai": original_birads_set,
+            "extra_in_ai": set(),
+            "description": f"报告有BI-RADS分类：{sorted(original_birads_set)}，AI没有判断",
+        }
+
+    # 计算差异
+    missing_in_ai = original_birads_set - llm_birads_set  # AI缺少的分类
+    extra_in_ai = llm_birads_set - original_birads_set  # AI额外的分类
+
+    # 判断是否一致
+    if not missing_in_ai and not extra_in_ai:
+        # 完全一致
+        consistent = True
+        description = f"报告和AI的分类结果完全一致：{sorted(original_birads_set)}"
+    elif not missing_in_ai and extra_in_ai:
+        # AI有额外的分类，需要判断是否是更高风险
+        # 如果AI额外的分类都是更高风险（数字更大），则不一致
+        original_max = max(int(re.match(r"\d+", x).group()) for x in original_birads_set)
+        extra_max = max(int(re.match(r"\d+", x).group()) for x in extra_in_ai)
+        if extra_max > original_max:
+            consistent = False
+            description = f"AI分类结果包含报告中没有的更高风险分类：{sorted(extra_in_ai)}"
+        else:
+            consistent = True
+            description = f"AI分类结果包含报告中的所有分类，且额外分类风险不更高：{sorted(extra_in_ai)}"
+    else:
+        # AI缺少某些分类，或既有缺少又有额外
+        consistent = False
+        parts = []
+        if missing_in_ai:
+            parts.append(f"AI缺少报告中的分类：{sorted(missing_in_ai)}")
+        if extra_in_ai:
+            parts.append(f"AI包含报告中没有的分类：{sorted(extra_in_ai)}")
+        description = "；".join(parts)
+
+    return {
+        "consistent": consistent,
+        "report_birads_set": original_birads_set,
+        "ai_birads_set": llm_birads_set,
+        "missing_in_ai": missing_in_ai,
+        "extra_in_ai": extra_in_ai,
+        "description": description,
+    }
+
+
+def calculate_urgency_level(doctor_highest_birads: str, llm_highest_birads: str) -> dict:
+    """
+    计算评估紧急程度
+    
+    Args:
+        doctor_highest_birads: 医生给出的最高BI-RADS分类（例如："3"）
+        llm_highest_birads: LLM判断的最高BI-RADS分类（例如："4"）
+    
+    Returns:
+        {
+            "urgency_level": str,  # Low / Medium / High
+            "reason": str,  # 评估理由
+            "doctor_highest_birads": str,  # 医生最高BI-RADS
+            "llm_highest_birads": str,  # LLM最高BI-RADS
+            "comparison": str  # llm_exceeds / llm_equal_or_lower
+        }
+    
+    逻辑：
+    - 如果LLM判断的最高BI-RADS分类 > 医生给出的最高BI-RADS分类：
+      - 如果LLM判断的最高BI-RADS分类 >= 4类：High
+      - 否则：Medium
+    - 否则：Low
+    """
+    if not doctor_highest_birads or not llm_highest_birads:
+        return {
+            "urgency_level": "Low",
+            "reason": "无法比较：医生或AI的最高BI-RADS分类为空",
+            "doctor_highest_birads": doctor_highest_birads or "Unknown",
+            "llm_highest_birads": llm_highest_birads or "Unknown",
+            "comparison": "unknown",
+        }
+
+    try:
+        # 提取数字部分进行比较（忽略字母后缀如4A、4B等）
+        doctor_birads_int = int(re.match(r"\d+", doctor_highest_birads).group())
+        llm_birads_int = int(re.match(r"\d+", llm_highest_birads).group())
+    except (ValueError, AttributeError) as e:
+        logger.error(f"解析BI-RADS分类失败: doctor={doctor_highest_birads}, llm={llm_highest_birads}, error={e}")
+        return {
+            "urgency_level": "Low",
+            "reason": f"无法解析BI-RADS分类：{str(e)}",
+            "doctor_highest_birads": doctor_highest_birads,
+            "llm_highest_birads": llm_highest_birads,
+            "comparison": "unknown",
+        }
+
+    if llm_birads_int > doctor_birads_int:
+        comparison = "llm_exceeds"
+        if llm_birads_int >= 4:
+            urgency_level = "High"
+            reason = (
+                f"LLM判断的最高BI-RADS分类（{llm_highest_birads}类）超过医生给出的最高BI-RADS分类（{doctor_highest_birads}类），"
+                f"且LLM判断的最高BI-RADS分类 >= 4类，评估紧急程度为High"
+            )
+        else:
+            urgency_level = "Medium"
+            reason = (
+                f"LLM判断的最高BI-RADS分类（{llm_highest_birads}类）超过医生给出的最高BI-RADS分类（{doctor_highest_birads}类），"
+                f"但LLM判断的最高BI-RADS分类 < 4类，评估紧急程度为Medium"
+            )
+    else:
+        comparison = "llm_equal_or_lower"
+        urgency_level = "Low"
+        reason = (
+            f"LLM判断的最高BI-RADS分类（{llm_highest_birads}类）不超过医生给出的最高BI-RADS分类（{doctor_highest_birads}类），"
+            f"评估紧急程度为Low"
+        )
+
+    return {
+        "urgency_level": urgency_level,
+        "reason": reason,
+        "doctor_highest_birads": doctor_highest_birads,
+        "llm_highest_birads": llm_highest_birads,
+        "comparison": comparison,
+    }
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ export default function AbnormalFindings({
           riskColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
           'bg-green-100 text-green-700'
         }`}>
-          可疑程度：{riskText}
+          {selectedFinding.birads ? `BI-RADS ${selectedFinding.birads}类` : `评估紧急程度：${riskText}`}
         </div>
       </div>
 
@@ -129,7 +129,8 @@ export default function AbnormalFindings({
                 </div>
                 {finding.size && (
                   <div className={`mt-2 text-xs ${isSelected ? 'text-white/70' : 'text-gray-500'}`}>
-                    {finding.size.length}×{finding.size.width}×{finding.size.depth} cm
+                    {finding.size.length}×{finding.size.width}
+                    {finding.size.depth > 0 ? `×${finding.size.depth}` : ''} cm
                   </div>
                 )}
               </button>

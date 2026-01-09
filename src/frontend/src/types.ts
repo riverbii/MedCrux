@@ -74,6 +74,23 @@ export interface OverallAssessment {
     level: 'Low' | 'Medium' | 'High'
     description: string
   }
+  // 新增：评估紧急程度（BL-009）
+  assessmentUrgency?: {
+    urgencyLevel: 'Low' | 'Medium' | 'High'
+    reason: string
+    doctorHighestBirads: string
+    llmHighestBirads: string
+    comparison: 'llm_exceeds' | 'llm_equal_or_lower' | 'unknown'
+  }
+  // 新增：一致性校验结果（BL-009，报告分类结果和AI分类结果的一致性）
+  consistencyCheckNew?: {
+    consistent: boolean
+    reportBiradsSet: string[]
+    aiBiradsSet: string[]
+    missingInAi: string[]
+    extraInAi: string[]
+    description: string
+  }
 }
 
 export interface AnalysisResult {

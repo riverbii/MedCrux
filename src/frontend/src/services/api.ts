@@ -30,6 +30,81 @@ function parseDistanceFromNipple(distance: any): number | undefined {
   return undefined
 }
 
+// 注意：象限到钟点转换已由后端统一处理，前端不再需要此函数
+
+// 解析size字符串（格式：长径×横径×前后径 cm 或 长径×横径 cm）
+function parseSizeString(sizeStr: string | undefined): { length: number; width: number; depth: number } | undefined {
+  if (!sizeStr) {
+    return undefined
+  }
+
+  // 先尝试匹配3个维度（长径×横径×前后径）
+  let match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
+  if (match) {
+    return {
+      length: parseFloat(match[1]),
+      width: parseFloat(match[2]),
+      depth: parseFloat(match[3]),
+    }
+  }
+
+  // 如果3个维度匹配失败，尝试匹配2个维度（长径×横径）
+  match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)/)
+  if (match) {
+    return {
+      length: parseFloat(match[1]),
+      width: parseFloat(match[2]),
+      depth: 0, // 2个维度时，depth设为0，前端显示时会忽略
+    }
+  }
+
+  return undefined
+}
+
+// 生成详细事实摘要
+function generateDetailedFacts(findings: AbnormalFinding[]): string[] {
+  return findings.map((finding) => {
+    const parts: string[] = []
+    parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
+
+    if (finding.size) {
+      parts.push(`大小${finding.size.length}×${finding.size.width}${finding.size.depth > 0 ? `×${finding.size.depth}` : ''}cm`)
+    }
+    if (finding.morphology?.shape) {
+      parts.push(`形状${finding.morphology.shape}`)
+    }
+    if (finding.morphology?.boundary) {
+      parts.push(`边界${finding.morphology.boundary}`)
+    }
+    if (finding.morphology?.echo) {
+      parts.push(`回声${finding.morphology.echo}`)
+    }
+    if (finding.morphology?.orientation) {
+      parts.push(`方位${finding.morphology.orientation}`)
+    }
+    if (finding.birads) {
+      parts.push(`BI-RADS ${finding.birads}类`)
+    }
+    parts.push(`风险等级${finding.risk === 'High' ? '高' : finding.risk === 'Medium' ? '中' : '低'}`)
+    if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
+      parts.push('⚠️存在不一致')
+    }
+
+    return parts.join('，')
+  })
+}
+
+// 将Set或Array转换为Array（用于处理后端可能返回Set的情况）
+function convertSetToArray<T>(value: Set<T> | T[] | undefined): T[] {
+  if (!value) {
+    return []
+  }
+  if (Array.isArray(value)) {
+    return value
+  }
+  return Array.from(value)
+}
+
 // 从OCR文本中提取原报告事实性摘要和结论
 function extractOriginalReportSummary(
   ocrText: string,
@@ -162,6 +237,7 @@ export interface AnalysisResponse {
         size?: string
       }
       birads_class?: string
+      llm_birads_class?: string  // BL-009新增：LLM独立判断的BI-RADS分类
       inconsistency_alert?: boolean
       inconsistency_reasons?: string[]
     }>
@@ -179,6 +255,21 @@ export interface AnalysisResponse {
     _new_format?: {
       nodules: any[]
       overall_assessment: any
+      assessment_urgency?: {
+        urgency_level: 'Low' | 'Medium' | 'High'
+        reason: string
+        doctor_highest_birads: string
+        llm_highest_birads: string
+        comparison: 'llm_exceeds' | 'llm_equal_or_lower' | 'unknown'
+      }
+      consistency_check?: {
+        consistent: boolean
+        report_birads_set: Set<string> | string[]
+        ai_birads_set: Set<string> | string[]
+        missing_in_ai: Set<string> | string[]
+        extra_in_ai: Set<string> | string[]
+        description: string
+      }
     }
   }
   message: string
@@ -208,34 +299,8 @@ function convertToAnalysisResult(
   if (aiResult._new_format) {
     const newFormat = aiResult._new_format
     const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => {
-      // 解析size字符串（格式：长径×横径×前后径 cm 或 长径×横径 cm）
-      let sizeObj: { length: number; width: number; depth: number } | undefined
-      if (nodule.morphology?.size) {
-        const sizeStr = nodule.morphology.size
-        // 先尝试匹配3个维度（长径×横径×前后径）
-        let match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
-        if (match) {
-          sizeObj = {
-            length: parseFloat(match[1]),
-            width: parseFloat(match[2]),
-            depth: parseFloat(match[3]),
-          }
-        } else {
-          // 如果3个维度匹配失败，尝试匹配2个维度（长径×横径）
-          match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)/)
-          if (match) {
-            sizeObj = {
-              length: parseFloat(match[1]),
-              width: parseFloat(match[2]),
-              depth: 0, // 2个维度时，depth设为0，前端显示时会忽略
-            }
-          }
-        }
-      }
-      // 如果morphology.size解析失败，尝试使用nodule.size（直接来自后端）
-      if (!sizeObj && nodule.size) {
-        sizeObj = nodule.size
-      }
+      // 解析size字符串（优先使用morphology.size，如果失败则使用nodule.size）
+      const sizeObj = parseSizeString(nodule.morphology?.size) || nodule.size
 
       return {
         id: nodule.id || `finding_${index + 1}`,
@@ -272,8 +337,8 @@ function convertToAnalysisResult(
     const llmSummary = typeof newFormat.overall_assessment?.summary === 'string'
       ? newFormat.overall_assessment.summary
       : Array.isArray(newFormat.overall_assessment?.summary)
-      ? (newFormat.overall_assessment.summary as string[]).join(' ')
-      : ''
+        ? (newFormat.overall_assessment.summary as string[]).join(' ')
+        : ''
 
     const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
     const summaryIsInsufficient = llmSummary.length < totalNodules * 50
@@ -281,35 +346,7 @@ function convertToAnalysisResult(
     let detailedFacts: string[] = []
     if (summaryIsEmpty || summaryIsInsufficient) {
       // 自动生成详细摘要
-      detailedFacts = findings.map((finding) => {
-        const parts: string[] = []
-        parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
-
-        if (finding.size) {
-          parts.push(`大小${finding.size.length}×${finding.size.width}×${finding.size.depth}cm`)
-        }
-        if (finding.morphology?.shape) {
-          parts.push(`形状${finding.morphology.shape}`)
-        }
-        if (finding.morphology?.boundary) {
-          parts.push(`边界${finding.morphology.boundary}`)
-        }
-        if (finding.morphology?.echo) {
-          parts.push(`回声${finding.morphology.echo}`)
-        }
-        if (finding.morphology?.orientation) {
-          parts.push(`方位${finding.morphology.orientation}`)
-        }
-        if (finding.birads) {
-          parts.push(`BI-RADS ${finding.birads}类`)
-        }
-        parts.push(`风险等级${finding.risk === 'High' ? '高' : finding.risk === 'Medium' ? '中' : '低'}`)
-        if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
-          parts.push('⚠️存在不一致')
-        }
-
-        return parts.join('，')
-      })
+      detailedFacts = generateDetailedFacts(findings)
     } else {
       // 使用LLM返回的摘要
       if (Array.isArray(newFormat.overall_assessment?.summary)) {
@@ -338,12 +375,16 @@ function convertToAnalysisResult(
       })),
     }
 
-    // 计算基于一致性校验的风险评估
+    // 计算基于一致性校验的评估紧急程度
     const consistencyBasedRisk = {
       level: (inconsistentFindings.length > 0 ? 'High' : inconsistentFindings.length === 0 && totalNodules > 0 ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
       description: inconsistentFindings.length > 0
-        ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确，建议重新评估。不一致的异常发现可能存在风险被低估的情况。`
-        : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
+        ? inconsistentFindings.length === 1
+          ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要立即进一步评估，建议尽快咨询专业医生进行完整评估。`
+          : `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要进一步评估，建议咨询专业医生进行完整评估。`
+        : totalNodules > 0
+          ? '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。报告描述的特征提示可以常规随访，建议咨询专业医生确认。'
+          : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
     }
 
     // 计算原报告最高BI-RADS分类
@@ -354,6 +395,30 @@ function convertToAnalysisResult(
 
     // 从OCR文本中提取原报告事实性摘要和结论（优先使用后端解析结果）
     const originalReportData = ocrText ? extractOriginalReportSummary(ocrText, reportStructure) : {}
+
+    // 处理BL-009新增字段
+    let assessmentUrgency: OverallAssessment['assessmentUrgency'] | undefined
+    if (newFormat.assessment_urgency) {
+      assessmentUrgency = {
+        urgencyLevel: newFormat.assessment_urgency.urgency_level,
+        reason: newFormat.assessment_urgency.reason,
+        doctorHighestBirads: newFormat.assessment_urgency.doctor_highest_birads,
+        llmHighestBirads: newFormat.assessment_urgency.llm_highest_birads,
+        comparison: newFormat.assessment_urgency.comparison,
+      }
+    }
+
+    let consistencyCheckNew: OverallAssessment['consistencyCheckNew'] | undefined
+    if (newFormat.consistency_check) {
+      consistencyCheckNew = {
+        consistent: newFormat.consistency_check.consistent,
+        reportBiradsSet: convertSetToArray(newFormat.consistency_check.report_birads_set),
+        aiBiradsSet: convertSetToArray(newFormat.consistency_check.ai_birads_set),
+        missingInAi: convertSetToArray(newFormat.consistency_check.missing_in_ai),
+        extraInAi: convertSetToArray(newFormat.consistency_check.extra_in_ai),
+        description: newFormat.consistency_check.description,
+      }
+    }
 
     const overallAssessment: OverallAssessment = {
       summary: llmSummary || detailedFacts.join(' '),
@@ -374,6 +439,8 @@ function convertToAnalysisResult(
       },
       consistencyCheck,
       consistencyBasedRisk,
+      assessmentUrgency,
+      consistencyCheckNew,
     }
 
     return { findings, overallAssessment }
@@ -382,34 +449,8 @@ function convertToAnalysisResult(
   // 使用旧格式（向后兼容）
   if (aiResult.nodules && aiResult.nodules.length > 0) {
     const findings: AbnormalFinding[] = aiResult.nodules.map((nodule, index) => {
-      // 解析size字符串（格式：长径×横径×前后径 cm 或 长径×横径 cm）
-      let sizeObj: { length: number; width: number; depth: number } | undefined
-      if (nodule.morphology?.size) {
-        const sizeStr = nodule.morphology.size
-        // 先尝试匹配3个维度（长径×横径×前后径）
-        let match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)\s*×\s*([\d.]+)/)
-        if (match) {
-          sizeObj = {
-            length: parseFloat(match[1]),
-            width: parseFloat(match[2]),
-            depth: parseFloat(match[3]),
-          }
-        } else {
-          // 如果3个维度匹配失败，尝试匹配2个维度（长径×横径）
-          match = sizeStr.match(/([\d.]+)\s*×\s*([\d.]+)/)
-          if (match) {
-            sizeObj = {
-              length: parseFloat(match[1]),
-              width: parseFloat(match[2]),
-              depth: 0, // 2个维度时，depth设为0，前端显示时会忽略
-            }
-          }
-        }
-      }
-      // 如果morphology.size解析失败，尝试使用nodule.size（直接来自后端）
-      if (!sizeObj && nodule.size) {
-        sizeObj = nodule.size
-      }
+      // 解析size字符串（优先使用morphology.size，如果失败则使用nodule.size）
+      const sizeObj = parseSizeString(nodule.morphology?.size) || nodule.size
 
       return {
         id: nodule.id || `finding_${index + 1}`,
@@ -446,43 +487,15 @@ function convertToAnalysisResult(
     const llmSummary = typeof aiResult.overall_assessment?.summary === 'string'
       ? aiResult.overall_assessment.summary
       : Array.isArray(aiResult.overall_assessment?.summary)
-      ? (aiResult.overall_assessment.summary as string[]).join(' ')
-      : ''
+        ? (aiResult.overall_assessment.summary as string[]).join(' ')
+        : ''
 
     const summaryIsEmpty = !llmSummary || llmSummary.trim().length === 0
     const summaryIsInsufficient = llmSummary.length < totalNodules * 50
 
     let detailedFacts: string[] = []
     if (summaryIsEmpty || summaryIsInsufficient) {
-      detailedFacts = findings.map((finding) => {
-        const parts: string[] = []
-        parts.push(`${finding.name}（${finding.location.breast === 'left' ? '左乳' : '右乳'}${finding.location.clockPosition}${finding.location.distanceFromNipple ? `，距乳头${finding.location.distanceFromNipple}cm` : ''}）`)
-
-        if (finding.size) {
-          parts.push(`大小${finding.size.length}×${finding.size.width}×${finding.size.depth}cm`)
-        }
-        if (finding.morphology?.shape) {
-          parts.push(`形状${finding.morphology.shape}`)
-        }
-        if (finding.morphology?.boundary) {
-          parts.push(`边界${finding.morphology.boundary}`)
-        }
-        if (finding.morphology?.echo) {
-          parts.push(`回声${finding.morphology.echo}`)
-        }
-        if (finding.morphology?.orientation) {
-          parts.push(`方位${finding.morphology.orientation}`)
-        }
-        if (finding.birads) {
-          parts.push(`BI-RADS ${finding.birads}类`)
-        }
-        parts.push(`风险等级${finding.risk === 'High' ? '高' : finding.risk === 'Medium' ? '中' : '低'}`)
-        if (finding.inconsistencyAlerts && finding.inconsistencyAlerts.length > 0) {
-          parts.push('⚠️存在不一致')
-        }
-
-        return parts.join('，')
-      })
+      detailedFacts = generateDetailedFacts(findings)
     } else {
       if (Array.isArray(aiResult.overall_assessment?.summary)) {
         detailedFacts = aiResult.overall_assessment.summary.filter((s: string) => s && s.trim())
@@ -510,12 +523,16 @@ function convertToAnalysisResult(
       })),
     }
 
-    // 计算基于一致性校验的风险评估（旧格式）
+    // 计算基于一致性校验的评估紧急程度（旧格式）
     const consistencyBasedRisk = {
       level: (inconsistentFindings.length > 0 ? 'High' : inconsistentFindings.length === 0 && totalNodules > 0 ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
       description: inconsistentFindings.length > 0
-        ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确，建议重新评估。不一致的异常发现可能存在风险被低估的情况。`
-        : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
+        ? inconsistentFindings.length === 1
+          ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要立即进一步评估，建议尽快咨询专业医生进行完整评估。`
+          : `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要进一步评估，建议咨询专业医生进行完整评估。`
+        : totalNodules > 0
+          ? '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。报告描述的特征提示可以常规随访，建议咨询专业医生确认。'
+          : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
     }
 
     // 计算原报告最高BI-RADS分类（旧格式）

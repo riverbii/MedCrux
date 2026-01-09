@@ -10,8 +10,8 @@ export default function PatientEducationModal({ isOpen, onClose }: PatientEducat
     { class: '0', title: '不完整评估', desc: '需要进一步影像学检查才能完成评估', suggestion: '追加影像评估' },
     { class: '1', title: '阴性', desc: '无异常发现', suggestion: '常规筛查' },
     { class: '2', title: '良性', desc: '明确的良性发现', suggestion: '常规筛查' },
-    { class: '3', title: '可能良性', desc: '可能为良性，恶性可能性<2%', suggestion: '短期随访（6个月）' },
-    { class: '4', title: '可疑异常', desc: '可疑异常，需要进一步检查，恶性可能性2%-95%', suggestion: '建议活检' },
+    { class: '3', title: '可能良性', desc: '可能为良性，恶性可能性>0%但≤2%', suggestion: '短期随访（通常6个月）' },
+    { class: '4', title: '可疑异常', desc: '可疑异常，需要活检，恶性可能性>2%且<95%。可细分为4A（2%-10%）、4B（10%-50%）、4C（50%-95%）', suggestion: '建议活检' },
     { class: '5', title: '高度可疑恶性', desc: '高度怀疑恶性，恶性可能性≥95%', suggestion: '强烈建议活检' },
     { class: '6', title: '已证实恶性', desc: '已通过活检证实为恶性', suggestion: '治疗' },
   ]

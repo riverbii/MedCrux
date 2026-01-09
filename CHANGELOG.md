@@ -7,6 +7,40 @@
 
 ---
 
+## [1.3.2] - 2026-01-08
+
+### Added
+- **BL-009: 评估紧急程度功能**
+  - 新增评估紧急程度功能：评估"当医生给出了更低的风险评级，而患者实际的风险评级更高"的情况
+  - 从影像学诊断（diagnosis）部分提取原报告BI-RADS分类集合和最高值
+  - 基于事实性描述（检查所见）独立判断BI-RADS分类，不参考原报告结论
+  - 一致性校验：对比报告分类结果集合和AI分类结果集合
+  - 计算评估紧急程度：对比最高BI-RADS分类，应用产品逻辑（Low/Medium/High）
+  - 性能优化：直接从diagnosis提取BI-RADS分类，避免完整LLM调用，性能提升显著
+- **新增函数**：
+  - `extract_doctor_birads()` - 从diagnosis提取BI-RADS分类（正则表达式）
+  - `analyze_birads_independently()` - 基于findings独立判断BI-RADS分类
+  - `check_consistency_sets()` - 一致性校验
+  - `calculate_urgency_level()` - 计算评估紧急程度
+- **单元测试**：
+  - 新增 `tests/test_bl009.py` - BL-009功能单元测试（18个测试用例）
+
+### Changed
+- **代码质量优化**：
+  - 删除前端未使用的象限转换函数（`convertQuadrantToClockPosition`）
+  - 提取公共函数：`parseSizeString`、`generateDetailedFacts`、`convertSetToArray`（前端）
+  - 简化数据合并逻辑：提取`_match_nodule_by_id_or_location`和`_merge_nodule_data`函数（后端）
+  - 减少重复代码约165行，代码可读性和可维护性显著提升
+
+### Technical
+- 技术设计文档：`docs/dev/design/BL009_ASSESSMENT_URGENCY_ARCHITECTURE.md`
+- 技术评审文档：`docs/gov/BL009_TECHNICAL_REVIEW_V2.md`
+- 测试验证报告：`docs/gov/BL009_TEST_VERIFICATION.md`
+- QA验收文档：`docs/gov/QA_BL009_ACCEPTANCE.md`
+- 代码冗余审查报告：`docs/gov/BL009_CODE_REDUNDANCY_REVIEW.md`
+
+---
+
 ## [1.3.1] - 2026-01-07
 
 ### Fixed

@@ -14,7 +14,7 @@ export default function ImageDisplay({ imageUrl, ocrText, onRemove }: ImageDispl
   return (
     <div className="relative group">
       {/* 图片预览区域 */}
-      <div className="relative rounded-2xl overflow-hidden bg-gray-900 min-h-[400px] flex items-center justify-center">
+      <div className="relative rounded-2xl overflow-hidden bg-white min-h-[400px] flex items-center justify-center">
         <img
           src={imageUrl}
           alt="预览图像"

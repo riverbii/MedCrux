@@ -44,18 +44,23 @@ MedCrux 旨在为患者提供医学影像报告的第二意见参考，帮助患
 
 ## ✨ 功能概览
 
-### 当前版本（v1.3.0）
+### 当前版本（v1.3.2）
 
 #### 核心功能
 - ✅ **OCR 文字识别**：支持 JPG/PNG 格式的医学报告图片
 - ✅ **AI 智能分析**：基于 DeepSeek 大模型的医学逻辑分析
 - ✅ **BI-RADS 一致性检查**：对照 ACR BI-RADS 标准检查一致性
+- ✅ **评估紧急程度**（v1.3.2新增）：评估"当医生给出了更低的风险评级，而患者实际的风险评级更高"的情况
+  - 从影像学诊断提取原报告BI-RADS分类
+  - 基于事实性描述独立判断BI-RADS分类（不参考原报告结论）
+  - 一致性校验：对比报告分类结果集合和AI分类结果集合
+  - 计算评估紧急程度：对比最高BI-RADS分类（Low/Medium/High）
 - ✅ **风险等级评估**：自动评估风险等级（Low/Medium/High）
 - ✅ **异常发现可视化**：胸部示意图展示异常发现位置
 - ✅ **患者教育**：BI-RADS 分级制度说明
 
 #### UI/UX 特性
-- ✅ **现代化界面**：基于 React + TypeScript + Tailwind CSS（v1.3.0）
+- ✅ **现代化界面**：基于 React + TypeScript + Tailwind CSS（v1.3.1）
 - ✅ **响应式设计**：支持桌面端和移动端
 - ✅ **实时分析状态**：显示所有分析阶段（OCR、RAG、LLM、一致性检查）
 - ✅ **交互式可视化**：异常发现列表、详情、示意图联动
@@ -63,7 +68,7 @@ MedCrux 旨在为患者提供医学影像报告的第二意见参考，帮助患
 ### 技术架构
 
 - **后端框架**：FastAPI
-- **前端框架**：React + TypeScript + Tailwind CSS（v1.3.0），Streamlit（v1.2.0及之前）
+- **前端框架**：React + TypeScript + Tailwind CSS（v1.3.1），Streamlit（v1.2.0及之前）
 - **OCR 引擎**：RapidOCR (ONNXRuntime)
 - **图像处理**：OpenCV
 - **AI 模型**：DeepSeek (OpenAI-compatible API)
@@ -114,7 +119,7 @@ export DEEPSEEK_API_KEY="sk-your-api-key-here"
 
 #### 4. 启动服务
 
-**方式一：使用测试脚本（推荐，v1.3.0）**
+**方式一：使用测试脚本（推荐，v1.3.1）**
 
 ```bash
 # 一键启动后端和前端（本地测试）
@@ -129,7 +134,7 @@ export DEEPSEEK_API_KEY="sk-your-api-key-here"
 # 终端1：启动API服务
 ./scripts/start_api.sh
 
-# 终端2：启动前端（v1.3.0）
+# 终端2：启动前端（v1.3.1）
 ./scripts/start_frontend.sh
 
 # 或启动Streamlit UI（v1.2.0及之前）
@@ -241,6 +246,15 @@ file: <image_file>
 
 ## 🗺️ Roadmap
 
+### v1.3.1（已完成 ✅）
+
+- [x] 修复 BUG-001: cm/mm 单位转换问题
+- [x] 修复 BUG-002: 左乳11点可视化错误（字符串匹配顺序）
+- [x] 修复 BUG-003: OCR 信息丢失问题
+- [x] 位置信息结构化输出优化（统一4个固定钟点：1、11、5、7，mm转cm）
+- [x] 位置可视化 QA Gate 建立
+- [x] 代码质量改进（语言规范+工具链：Python Ruff + TypeScript ESLint）
+
 ### v1.3.0（已完成 ✅）
 
 - [x] 前端框架升级：从 Streamlit 升级到 React + TypeScript + Tailwind CSS
@@ -254,10 +268,8 @@ file: <image_file>
 
 ### v1.4.0（计划中）
 
-- [ ] 多语言支持：中英文切换
-- [ ] 报告导出功能：PDF/Word 格式
+- [ ] 报告导出功能（PDF）
 - [ ] 历史记录功能：保存分析历史
-- [ ] 用户账户系统：个人数据管理
 
 ### v2.0.0（未来）
 
