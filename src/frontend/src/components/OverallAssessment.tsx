@@ -12,7 +12,7 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
 
   // 卡片2：评估紧急程度（BL-009新增，包含一致性校验结果）
   const assessmentUrgency = assessment.assessmentUrgency
-  
+
   // 注意：consistencyCheck（原有的形态学特征一致性检查）仅在综合建议中使用，不再单独显示卡片
   const consistencyCheck = assessment.consistencyCheck
 
@@ -94,10 +94,10 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
             </div>
             <div
               className={`rounded-xl p-6 text-white ${assessmentUrgency.urgencyLevel === 'High'
-                  ? 'bg-gradient-to-r from-red-500 to-red-600'
-                  : assessmentUrgency.urgencyLevel === 'Medium'
-                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                    : 'bg-gradient-to-r from-green-500 to-green-600'
+                ? 'bg-gradient-to-r from-red-500 to-red-600'
+                : assessmentUrgency.urgencyLevel === 'Medium'
+                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                  : 'bg-gradient-to-r from-green-500 to-green-600'
                 }`}
             >
               <div className="text-2xl font-bold mb-2">
@@ -121,8 +121,8 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
                     <div className="flex-shrink-0">
                       <div className="text-xs font-semibold mb-1 opacity-75">一致性检查：</div>
                       <div className={`bg-white/40 border rounded-lg px-4 py-2 flex items-center gap-2 ${assessment.consistencyCheckNew.consistent
-                          ? 'border-green-500/60 text-green-800'
-                          : 'border-yellow-500/60 text-yellow-800'
+                        ? 'border-green-500/60 text-green-800'
+                        : 'border-yellow-500/60 text-yellow-800'
                         }`}>
                         <span className={assessment.consistencyCheckNew.consistent ? 'text-green-700' : 'text-yellow-700'}>
                           {assessment.consistencyCheckNew.consistent ? '✅' : '⚠️'}
