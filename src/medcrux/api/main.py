@@ -351,10 +351,48 @@ async def analyze_report(file: UploadFile = File(...)):
                 logger.warning("一致性校验失败")
 
         # 5.7. 计算评估紧急程度（BL-009新增）
+        # 注意：评估紧急程度应该包括两种情况：
+        # 1. AI判断的风险评级高于医生判断
+        # 2. 识别到需要关注的风险征兆时（即使BI-RADS相同）
         assessment_urgency = None
+        
+        # 先检查是否有风险征兆（在风险征兆识别之前，先初始化）
+        has_risk_signs = False
+        risk_signs_summary_temp = None
+        
+        # 5.9. 风险征兆识别（BL-010新增）- 提前执行以便用于评估紧急程度计算
+        if ai_analysis.get("nodules"):
+            try:
+                logger.info("开始风险征兆识别（用于评估紧急程度）")
+                for nodule in ai_analysis["nodules"]:
+                    morphology = nodule.get("morphology", {})
+                    risk_signs = identify_risk_signs(morphology, "")
+                    if risk_signs:
+                        nodule["risk_signs"] = risk_signs
+                        logger.debug(f"异常发现 {nodule.get('id', 'unknown')} 识别到 {len(risk_signs)} 个风险征兆")
+                
+                # 汇总所有风险征兆
+                risk_signs_summary_temp = aggregate_risk_signs(ai_analysis["nodules"])
+                if risk_signs_summary_temp["strong_evidence"] or risk_signs_summary_temp["weak_evidence"]:
+                    has_risk_signs = True
+                    if "overall_assessment" not in ai_analysis:
+                        ai_analysis["overall_assessment"] = {}
+                    ai_analysis["overall_assessment"]["risk_signs_summary"] = risk_signs_summary_temp
+                    logger.info(
+                        f"风险征兆汇总完成: 强证据={len(risk_signs_summary_temp['strong_evidence'])}, "
+                        f"弱证据={len(risk_signs_summary_temp['weak_evidence'])}"
+                    )
+            except Exception as e:
+                log_error_with_context(
+                    logger, e, context={"step": "风险征兆识别（用于评估紧急程度）", **context}, operation="风险征兆识别"
+                )
+                logger.warning("风险征兆识别失败，将继续处理")
+        
+        # 计算评估紧急程度
+        # 注意：必须始终生成assessment_urgency（即使是Low），以确保前端始终显示卡片
         if original_highest_birads and llm_highest_birads:
             try:
-                logger.info("开始计算评估紧急程度")
+                logger.info("开始计算评估紧急程度（基于BI-RADS对比）")
                 assessment_urgency = calculate_urgency_level(original_highest_birads, llm_highest_birads)
                 logger.info(f"评估紧急程度计算完成: {assessment_urgency.get('urgency_level')}")
             except Exception as e:
@@ -362,6 +400,70 @@ async def analyze_report(file: UploadFile = File(...)):
                     logger, e, context={"step": "计算评估紧急程度", **context}, operation="计算评估紧急程度"
                 )
                 logger.warning("计算评估紧急程度失败")
+        elif original_highest_birads or llm_highest_birads:
+            # 如果只有其中一个BI-RADS，生成一个Low级别的评估紧急程度
+            # 确保前端始终显示卡片
+            try:
+                logger.info("BI-RADS数据不完整，生成默认Low级别评估紧急程度")
+                assessment_urgency = {
+                    "urgency_level": "Low",
+                    "reason": "无法完整比较：医生或AI的BI-RADS分类数据不完整",
+                    "doctor_highest_birads": original_highest_birads or "未提取",
+                    "llm_highest_birads": llm_highest_birads or "未判断",
+                    "comparison": "unknown",
+                }
+            except Exception as e:
+                log_error_with_context(
+                    logger, e, context={"step": "生成默认评估紧急程度", **context}, operation="生成默认评估紧急程度"
+                )
+                logger.warning("生成默认评估紧急程度失败")
+        
+        # 如果有风险征兆但评估紧急程度为Low或None，需要提升紧急程度
+        if has_risk_signs and (not assessment_urgency or assessment_urgency.get('urgency_level') == 'Low'):
+            try:
+                logger.info("检测到风险征兆，重新计算评估紧急程度")
+                # 如果有强证据，至少是Medium；如果有弱证据且没有强证据，也是Medium
+                urgency_level = 'Medium'
+                if risk_signs_summary_temp and risk_signs_summary_temp.get("strong_evidence"):
+                    # 如果有强证据，且BI-RADS >= 4，可能是High
+                    if llm_highest_birads:
+                        try:
+                            llm_birads_int = int(re.match(r"\d+", llm_highest_birads).group())
+                            if llm_birads_int >= 4:
+                                urgency_level = 'High'
+                        except (ValueError, AttributeError):
+                            pass
+                
+                # 构建评估理由
+                reason_parts = []
+                if assessment_urgency:
+                    reason_parts.append(assessment_urgency.get('reason', ''))
+                if risk_signs_summary_temp:
+                    strong_count = len(risk_signs_summary_temp.get("strong_evidence", []))
+                    weak_count = len(risk_signs_summary_temp.get("weak_evidence", []))
+                    if strong_count > 0 or weak_count > 0:
+                        risk_desc = []
+                        if strong_count > 0:
+                            risk_desc.append(f"{strong_count}个强证据")
+                        if weak_count > 0:
+                            risk_desc.append(f"{weak_count}个弱证据")
+                        reason_parts.append(f"识别到风险征兆（{', '.join(risk_desc)}），需要关注")
+                
+                reason = "；".join(reason_parts) if reason_parts else "识别到风险征兆，需要关注"
+                
+                assessment_urgency = {
+                    "urgency_level": urgency_level,
+                    "reason": reason,
+                    "doctor_highest_birads": original_highest_birads or "未提取",
+                    "llm_highest_birads": llm_highest_birads or "未判断",
+                    "comparison": "risk_signs_detected" if not assessment_urgency else assessment_urgency.get('comparison', 'unknown'),
+                }
+                logger.info(f"基于风险征兆的评估紧急程度计算完成: {urgency_level}")
+            except Exception as e:
+                log_error_with_context(
+                    logger, e, context={"step": "基于风险征兆计算评估紧急程度", **context}, operation="计算评估紧急程度"
+                )
+                logger.warning("基于风险征兆计算评估紧急程度失败")
 
         # 5.8. 合并结果（BL-009新增）
         # 优先使用独立BI-RADS判断的结果，如果没有则使用原有分析结果
@@ -388,37 +490,30 @@ async def analyze_report(file: UploadFile = File(...)):
                     ai_analysis["overall_assessment"] = {}
                 # 可以在这里更新overall_assessment中的highest_risk等信息
         
-        # 5.9. 风险征兆识别（BL-010新增）
-        # 为每个异常发现识别风险征兆
-        if ai_analysis.get("nodules"):
-            try:
-                logger.info("开始风险征兆识别")
-                findings_text = report_structure.get("findings", "") if report_structure else ""
-                
-                for nodule in ai_analysis["nodules"]:
-                    morphology = nodule.get("morphology", {})
-                    risk_signs = identify_risk_signs(morphology, findings_text)
-                    if risk_signs:
-                        nodule["risk_signs"] = risk_signs
-                        logger.debug(f"异常发现 {nodule.get('id', 'unknown')} 识别到 {len(risk_signs)} 个风险征兆")
-                
-                # 汇总所有风险征兆
-                risk_signs_summary = aggregate_risk_signs(ai_analysis["nodules"])
-                if risk_signs_summary["strong_evidence"] or risk_signs_summary["weak_evidence"]:
-                    if "overall_assessment" not in ai_analysis:
-                        ai_analysis["overall_assessment"] = {}
-                    ai_analysis["overall_assessment"]["risk_signs_summary"] = risk_signs_summary
-                    logger.info(
-                        f"风险征兆汇总完成: 强证据={len(risk_signs_summary['strong_evidence'])}, "
-                        f"弱证据={len(risk_signs_summary['weak_evidence'])}"
-                    )
-            except Exception as e:
-                log_error_with_context(
-                    logger, e, context={"step": "风险征兆识别", **context}, operation="风险征兆识别"
-                )
-                logger.warning("风险征兆识别失败，将继续处理")
+        # 注意：风险征兆识别已在5.7节提前执行，用于评估紧急程度计算
+        # 这里不再重复执行，但保留注释说明
         
         # 添加BL-009相关结果
+        # 注意：必须始终生成assessment_urgency（即使是Low），以确保前端始终显示卡片
+        # 只有在完全无法评估的情况下（既没有BI-RADS数据，也没有风险征兆），才不生成
+        if not assessment_urgency and not has_risk_signs:
+            # 完全无法评估的情况，生成一个默认的Low级别
+            # 这样前端仍然可以显示卡片，避免用户误以为系统出错
+            try:
+                logger.info("完全无法评估，生成默认Low级别评估紧急程度")
+                assessment_urgency = {
+                    "urgency_level": "Low",
+                    "reason": "无法进行评估：缺少必要的BI-RADS分类数据",
+                    "doctor_highest_birads": original_highest_birads or "未提取",
+                    "llm_highest_birads": llm_highest_birads or "未判断",
+                    "comparison": "unknown",
+                }
+            except Exception as e:
+                log_error_with_context(
+                    logger, e, context={"step": "生成默认评估紧急程度（完全无法评估）", **context}, operation="生成默认评估紧急程度"
+                )
+                logger.warning("生成默认评估紧急程度失败")
+        
         if assessment_urgency:
             ai_analysis["assessment_urgency"] = assessment_urgency
         if consistency_result:

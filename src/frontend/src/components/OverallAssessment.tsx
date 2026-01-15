@@ -12,13 +12,12 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
 
   // 卡片2：评估紧急程度（BL-009新增，包含一致性校验结果）
   const assessmentUrgency = assessment.assessmentUrgency
-  const consistencyCheckNew = assessment.consistencyCheckNew
   
   // 注意：consistencyCheck（原有的形态学特征一致性检查）仅在综合建议中使用，不再单独显示卡片
   const consistencyCheck = assessment.consistencyCheck
 
   return (
-    <div className="detail-card rounded-3xl shadow-elegant p-8 card-hover">
+    <div className="detail-card rounded-3xl shadow-elegant p-8 card-hover" style={{ position: 'relative', zIndex: 0 }}>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-800">整体评估</h3>
         {originalReport?.highestBirads && (
@@ -94,13 +93,12 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
               <span className="text-xs text-gray-500 ml-2 font-normal">（当AI判断的风险评级高于医生判断，或识别到需要关注的风险征兆时）</span>
             </div>
             <div
-              className={`rounded-xl p-6 text-white ${
-                assessmentUrgency.urgencyLevel === 'High'
+              className={`rounded-xl p-6 text-white ${assessmentUrgency.urgencyLevel === 'High'
                   ? 'bg-gradient-to-r from-red-500 to-red-600'
                   : assessmentUrgency.urgencyLevel === 'Medium'
-                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                  : 'bg-gradient-to-r from-green-500 to-green-600'
-              }`}
+                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                    : 'bg-gradient-to-r from-green-500 to-green-600'
+                }`}
             >
               <div className="text-2xl font-bold mb-2">
                 评估紧急程度：{assessmentUrgency.urgencyLevel}
@@ -122,11 +120,10 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
                   {assessment.consistencyCheckNew && (
                     <div className="flex-shrink-0">
                       <div className="text-xs font-semibold mb-1 opacity-75">一致性检查：</div>
-                      <div className={`bg-white/40 border rounded-lg px-4 py-2 flex items-center gap-2 ${
-                        assessment.consistencyCheckNew.consistent
+                      <div className={`bg-white/40 border rounded-lg px-4 py-2 flex items-center gap-2 ${assessment.consistencyCheckNew.consistent
                           ? 'border-green-500/60 text-green-800'
                           : 'border-yellow-500/60 text-yellow-800'
-                      }`}>
+                        }`}>
                         <span className={assessment.consistencyCheckNew.consistent ? 'text-green-700' : 'text-yellow-700'}>
                           {assessment.consistencyCheckNew.consistent ? '✅' : '⚠️'}
                         </span>
@@ -140,40 +137,40 @@ export default function OverallAssessment({ assessment }: OverallAssessmentProps
               </div>
 
               {/* 风险征兆汇总 - BL-010新增 */}
-              {assessment.riskSignsSummary && 
-               (assessment.riskSignsSummary.strongEvidence.length > 0 || assessment.riskSignsSummary.weakEvidence.length > 0) && (
-                <div className="bg-white/20 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-lg">⚠️</span>
-                    <span className="text-sm font-semibold">风险征兆汇总</span>
-                    <span className="text-xs opacity-75">
-                      （共 {assessment.riskSignsSummary.strongEvidence.length + assessment.riskSignsSummary.weakEvidence.length} 个）
-                    </span>
-                  </div>
+              {assessment.riskSignsSummary &&
+                (assessment.riskSignsSummary.strongEvidence.length > 0 || assessment.riskSignsSummary.weakEvidence.length > 0) && (
+                  <div className="bg-white/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg">⚠️</span>
+                      <span className="text-sm font-semibold">风险征兆汇总</span>
+                      <span className="text-xs opacity-75">
+                        （共 {assessment.riskSignsSummary.strongEvidence.length + assessment.riskSignsSummary.weakEvidence.length} 个）
+                      </span>
+                    </div>
 
-                  {/* 风险征兆列表 */}
-                  <div className="space-y-2">
-                    {assessment.riskSignsSummary.strongEvidence.map((riskSign, index) => (
-                      <div key={`strong-${index}`} className="bg-white/10 rounded-lg p-2 text-xs flex items-center gap-2">
-                        <span>🔴</span>
-                        <span className="flex-1">{riskSign.sign}</span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/40 border border-orange-600/70 text-orange-900">
-                          <span>强证据</span>
-                        </span>
-                      </div>
-                    ))}
-                    {assessment.riskSignsSummary.weakEvidence.map((riskSign, index) => (
-                      <div key={`weak-${index}`} className="bg-white/10 rounded-lg p-2 text-xs flex items-center gap-2">
-                        <span>🟡</span>
-                        <span className="flex-1">{riskSign.sign}</span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/30 border border-yellow-500/60 text-yellow-900">
-                          <span>弱证据</span>
-                        </span>
-                      </div>
-                    ))}
+                    {/* 风险征兆列表 */}
+                    <div className="space-y-2">
+                      {assessment.riskSignsSummary.strongEvidence.map((riskSign, index) => (
+                        <div key={`strong-${index}`} className="bg-white/10 rounded-lg p-2 text-xs flex items-center gap-2">
+                          <span>🔴</span>
+                          <span className="flex-1">{riskSign.sign}</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/40 border border-orange-600/70 text-orange-900">
+                            <span>强证据</span>
+                          </span>
+                        </div>
+                      ))}
+                      {assessment.riskSignsSummary.weakEvidence.map((riskSign, index) => (
+                        <div key={`weak-${index}`} className="bg-white/10 rounded-lg p-2 text-xs flex items-center gap-2">
+                          <span>🟡</span>
+                          <span className="flex-1">{riskSign.sign}</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/30 border border-yellow-500/60 text-yellow-900">
+                            <span>弱证据</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="text-xs opacity-75 border-t border-white/30 pt-3 mt-4">
                 这是基于报告文本的提示，不是医疗诊断。所有分析结果仅供参考，不能替代专业医生的诊断和治疗建议。

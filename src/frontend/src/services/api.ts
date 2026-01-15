@@ -298,12 +298,29 @@ function convertToAnalysisResult(
   // 优先使用新格式
   if (aiResult._new_format) {
     const newFormat = aiResult._new_format
+
+    // 确保前端使用的id在列表中唯一，避免同一个id对应多行时“同时选中”的问题
+    const idCounter: Record<string, number> = {}
+
     const findings: AbnormalFinding[] = (newFormat.nodules || []).map((nodule: any, index: number) => {
+      // 生成基础id（优先使用后端提供的id，否则使用finding_序号）
+      const baseId = (nodule.id || `finding_${index + 1}`).toString()
+      const count = (idCounter[baseId] ?? 0) + 1
+      idCounter[baseId] = count
+      const finalId = count === 1 ? baseId : `${baseId}#${count}`
+      if (count > 1) {
+        console.warn(`[API] 检测到重复异常发现ID "${baseId}"，已自动重命名为 "${finalId}" 以避免前端选中状态联动`)
+      }
+
       // 解析size字符串（优先使用morphology.size，如果失败则使用nodule.size）
-      const sizeObj = parseSizeString(nodule.morphology?.size) || nodule.size
+      const sizeObj = parseSizeString(nodule.morphology?.size) || parseSizeString(nodule.size) || nodule.size
+      // 确保size数据存在：如果sizeObj和nodule.size都不存在，记录警告
+      if (!sizeObj && !nodule.size) {
+        console.warn(`[API] 异常发现 ${finalId} 缺少size数据`)
+      }
 
       return {
-        id: nodule.id || `finding_${index + 1}`,
+        id: finalId,
         name: nodule.name || `异常发现${index + 1}`,
         risk: (nodule.risk_assessment === 'High' ? 'High' : nodule.risk_assessment === 'Medium' ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
         location: {
@@ -389,17 +406,7 @@ function convertToAnalysisResult(
       })),
     }
 
-    // 计算基于一致性校验的评估紧急程度
-    const consistencyBasedRisk = {
-      level: (inconsistentFindings.length > 0 ? 'High' : inconsistentFindings.length === 0 && totalNodules > 0 ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
-      description: inconsistentFindings.length > 0
-        ? inconsistentFindings.length === 1
-          ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要立即进一步评估，建议尽快咨询专业医生进行完整评估。`
-          : `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要进一步评估，建议咨询专业医生进行完整评估。`
-        : totalNodules > 0
-          ? '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。报告描述的特征提示可以常规随访，建议咨询专业医生确认。'
-          : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
-    }
+    // 注意：consistencyBasedRisk已废弃，已被assessmentUrgency替代
 
     // 计算原报告最高BI-RADS分类
     const allBirads = findings.map(f => f.birads).filter((b): b is string => !!b)
@@ -452,7 +459,6 @@ function convertToAnalysisResult(
         conclusion: originalReportData.conclusion,
       },
       consistencyCheck,
-      consistencyBasedRisk,
       assessmentUrgency,
       consistencyCheckNew,
       // BL-010新增：风险征兆汇总
@@ -542,17 +548,7 @@ function convertToAnalysisResult(
       })),
     }
 
-    // 计算基于一致性校验的评估紧急程度（旧格式）
-    const consistencyBasedRisk = {
-      level: (inconsistentFindings.length > 0 ? 'High' : inconsistentFindings.length === 0 && totalNodules > 0 ? 'Medium' : 'Low') as 'Low' | 'Medium' | 'High',
-      description: inconsistentFindings.length > 0
-        ? inconsistentFindings.length === 1
-          ? `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要立即进一步评估，建议尽快咨询专业医生进行完整评估。`
-          : `发现${inconsistentFindings.length}个不一致，原报告BI-RADS分类可能不准确。报告描述的特征提示需要进一步评估，建议咨询专业医生进行完整评估。`
-        : totalNodules > 0
-          ? '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。报告描述的特征提示可以常规随访，建议咨询专业医生确认。'
-          : '所有异常发现的一致性校验通过，原报告BI-RADS分类与形态学特征描述一致。',
-    }
+    // 注意：consistencyBasedRisk已废弃，已被assessmentUrgency替代
 
     // 计算原报告最高BI-RADS分类（旧格式）
     const allBirads = findings.map(f => f.birads).filter((b): b is string => !!b)
@@ -581,7 +577,6 @@ function convertToAnalysisResult(
         conclusion: originalReportData.conclusion,
       },
       consistencyCheck,
-      consistencyBasedRisk,
     }
 
     return { findings, overallAssessment }

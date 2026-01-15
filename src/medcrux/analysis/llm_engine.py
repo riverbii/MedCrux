@@ -621,8 +621,26 @@ def analyze_birads_independently(factual_text: str) -> dict:
         content = response.choices[0].message.content
         result = json.loads(content)
 
+        # 4.1 规范化结节ID，确保唯一且连续（nodule_1, nodule_2, ...）
+        nodules = result.get("nodules", []) or []
+        seen_ids: set[str] = set()
+        for idx, nodule in enumerate(nodules):
+            original_id = str(nodule.get("id") or "").strip() or f"nodule_{idx + 1}"
+            # 如果LLM给出的id重复或为空，则重新分配一个规范id
+            if original_id in seen_ids:
+                new_id = f"nodule_{idx + 1}"
+                logger.warning(
+                    f"独立BI-RADS判断返回的结节ID重复或无效：{original_id}，已重命名为 {new_id}"
+                )
+                nodule["id"] = new_id
+                seen_ids.add(new_id)
+            else:
+                nodule["id"] = original_id
+                seen_ids.add(original_id)
+
+        result["nodules"] = nodules
+
         # 5. 提取最高BI-RADS分类
-        nodules = result.get("nodules", [])
         llm_highest_birads = result.get("llm_highest_birads")
         
         # 如果没有提供llm_highest_birads，从nodules中提取

@@ -32,7 +32,7 @@ body {
 }
 
 .card-hover:hover {
-    transform: translateY(-4px);
+    /* 移除transform，避免影响布局和z-index */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 

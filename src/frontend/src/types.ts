@@ -76,11 +76,7 @@ export interface OverallAssessment {
       originalBirads: string
     }>
   }
-  // 新增：基于一致性校验的风险评估
-  consistencyBasedRisk?: {
-    level: 'Low' | 'Medium' | 'High'
-    description: string
-  }
+  // 注意：consistencyBasedRisk已废弃，已被assessmentUrgency替代
   // 新增：评估紧急程度（BL-009）
   assessmentUrgency?: {
     urgencyLevel: 'Low' | 'Medium' | 'High'
