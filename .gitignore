@@ -224,3 +224,6 @@ source_data/
 *.egg-info/
 build/
 dist/
+
+# repomix
+repomix/
