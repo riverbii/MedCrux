@@ -8,7 +8,7 @@ import OverallAssessment from '../components/OverallAssessment'
 import BreastDiagram from '../components/BreastDiagram'
 import Disclaimer from '../components/Disclaimer'
 import Footer from '../components/Footer'
-import { AnalysisResult, AnalysisStatus as StatusType, AbnormalFinding, RiskLevel } from '../types'
+import { AnalysisResult, AnalysisStatus as StatusType } from '../types'
 import { analyzeReport, getHealth } from '../services/api'
 
 export default function AnalysisPage() {
@@ -39,16 +39,7 @@ export default function AnalysisPage() {
     })
   }, [])
 
-  const getFindingRiskLevel = (finding: AbnormalFinding): RiskLevel => {
-    // 使用可选链 ?. 防止数据缺失时报错
-    const hasRiskSigns = finding.riskSigns && finding.riskSigns.length > 0
-    const hasStrongEvidence = hasRiskSigns && finding.riskSigns?.some(s => s.evidenceLevel === 'strong')
-
-    if (hasStrongEvidence) return 'High'
-    if (hasRiskSigns) return 'Medium'
-    return 'Low'
-  }
-
+  // 开始分析（直接上传文件并分析）
   const handleAnalyze = async () => {
     if (!uploadedFile) return
 
@@ -56,51 +47,49 @@ export default function AnalysisPage() {
     setAnalysisStatus('uploading')
     setAnalysisProgress(10)
 
-    // 1. 在这里声明变量，防止作用域飘红
-    let progressTimer: any = null
-
     try {
-      progressTimer = setInterval(() => {
+      // 模拟进度更新
+      const progressInterval = setInterval(() => {
         setAnalysisProgress((prev) => {
           if (prev >= 90) {
-            if (progressTimer) clearInterval(progressTimer)
+            clearInterval(progressInterval)
             return prev
           }
           return prev + 5
         })
       }, 1000)
 
-      // ... 模拟状态切换的 setTimeout 保持不变 ...
-      setTimeout(() => setAnalysisStatus('ocr'), 2000)
-      setTimeout(() => setAnalysisStatus('rag'), 4000)
-      setTimeout(() => setAnalysisStatus('llm'), 6000)
-      setTimeout(() => setAnalysisStatus('consistency'), 8000)
+      // 更新状态
+      setTimeout(() => {
+        setAnalysisStatus('ocr')
+        setAnalysisProgress(30)
+      }, 2000)
+      setTimeout(() => {
+        setAnalysisStatus('rag')
+        setAnalysisProgress(50)
+      }, 4000)
+      setTimeout(() => {
+        setAnalysisStatus('llm')
+        setAnalysisProgress(70)
+      }, 6000)
+      setTimeout(() => {
+        setAnalysisStatus('consistency')
+        setAnalysisProgress(85)
+      }, 8000)
 
       const response = await analyzeReport(uploadedFile)
-
-      // 清除定时器
-      if (progressTimer) clearInterval(progressTimer)
-
-      const processedFindings = response.result.findings.map((f: AbnormalFinding) => ({
-        ...f,
-        risk: getFindingRiskLevel(f)
-      }))
-
-      setAnalysisResult({
-        ...response.result,
-        findings: processedFindings
-      })
-
+      clearInterval(progressInterval)
+      setAnalysisResult(response.result)
       setOcrText(response.ocrText || '')
       setAnalysisStatus('completed')
       setAnalysisProgress(100)
 
-      if (processedFindings.length > 0) {
-        setSelectedFindingId(processedFindings[0].id)
+      // 自动选择第一个异常发现
+      if (response.result.findings.length > 0) {
+        setSelectedFindingId(response.result.findings[0].id)
       }
     } catch (error) {
       console.error('分析失败:', error)
-      if (progressTimer) clearInterval(progressTimer)
       setAnalysisStatus('error')
       alert('分析失败，请重试')
     } finally {
